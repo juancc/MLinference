@@ -16,7 +16,7 @@ import sys
 
 try:
     import tensorflow as tf
-except ImportError:
+except Exception: # Trigger different exceptions in Python > 3.5
     import tflite_runtime.interpreter as tflite
 
 from MLinference.geometry import Object
