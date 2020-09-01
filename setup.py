@@ -1,8 +1,8 @@
 from distutils.core import setup
 setup(
   name = 'mlinference',
-  packages = ['MLinference', 'MLinference.common', 'MLinference.common.PredictionStrategies', 'MLinference.geometry', 'MLinference.geometry.geometries', 'MLinference.architectures'],
-  version = '0.0.2',
+  packages = ['MLinference', 'MLinference.common', 'MLinference.common.PredictionStrategies.auxfunc','MLinference.common.PredictionStrategies', 'MLinference.geometry', 'MLinference.geometry.geometries', 'MLinference.architectures'],
+  version = '0.0.3',
   license= '',
   description = 'Packages for inference of Machine Learning models with explicit model protocol',
   author = 'Juan Carlos Arbelaez',
