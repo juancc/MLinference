@@ -8,7 +8,7 @@ Vaico
 # from inspect import signature
 
 from MLinference.geometry import geometries
-from MLinference.geometry import Object
+from MLinference.geometry.Object import Object
 
 def from_dict(d):
     """Create geometry from dict"""
