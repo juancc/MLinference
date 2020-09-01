@@ -32,8 +32,13 @@ class Yolo4(InferenceModel):
         self.labels = {int(idx):label for idx,label in labels.items()} # fix string idx to int
 
         self.input_size = input_size
-        if 'tf' in sys.modules.keys():
-            self.interpreter = tf.lite.Interpreter(model_path=filepath)
+        if 'tensorflow' in sys.modules.keys():
+            try:
+                self.interpreter = tf.lite.Interpreter(model_path=filepath)
+            except AttributeError as e:
+                print('Try to update Tensorflow. Error: {}'.format(e))
+                import tflite_runtime.interpreter as tflite
+                self.interpreter = tflite.Interpreter(model_path=filepath)
         else:
             self.interpreter = tflite.Interpreter(model_path=filepath)
         self.interpreter.allocate_tensors()
