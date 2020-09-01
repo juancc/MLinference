@@ -1,0 +1,1 @@
+from MLinference.architectures.Yolo4 import Yolo4

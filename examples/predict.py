@@ -1,5 +1,5 @@
 """Example for prediction using model weights"""
-from MLinference.architectures.Yolo4 import Yolo4
+from MLinference.architectures import Yolo4
 import cv2 as cv
 
 
