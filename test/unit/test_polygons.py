@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.geometries.Polygon import Polygon
+from MLinference.geometry.geometries.Polygon import Polygon
 
 class PolygonTests(unittest.TestCase):
     def test_equal(self):

@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.geometries.BoundBox import BoundBox
+from MLinference.geometry import BoundBox
 
 
 class BBTests(unittest.TestCase):

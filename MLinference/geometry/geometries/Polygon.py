@@ -10,7 +10,7 @@ JCA
 Vaico
 """
 
-from geometry.geometries.Geometry import Geometry
+from MLinference.geometry.geometries.Geometry import Geometry
 
 class Polygon(Geometry):
 

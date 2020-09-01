@@ -10,7 +10,7 @@ import reprlib
 import logging
 from abc import ABC, abstractmethod
 
-from common.exceptions import ConfigParamError
+from MLinference.common.exceptions import ConfigParamError
 
 log = logging.getLogger(__name__)
 

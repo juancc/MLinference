@@ -20,7 +20,7 @@ import reprlib
 
 import numpy as np
 
-from geometry.geometries.Geometry import Geometry
+from MLinference.geometry.geometries.Geometry import Geometry
 
 
 class Mask(Geometry):

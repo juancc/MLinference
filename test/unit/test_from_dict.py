@@ -1,10 +1,10 @@
 import unittest
-from geometry import creator
-from geometry import Object
-from geometry import BoundBox
-from geometry import Point
-from geometry import Circle
-from geometry import Polygon
+from MLinference.geometry import creator
+from MLinference.geometry import Object
+from MLinference.geometry import BoundBox
+from MLinference.geometry import Point
+from MLinference.geometry import Circle
+from MLinference.geometry import Polygon
 
 
 class test_from_dict(unittest.TestCase):

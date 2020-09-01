@@ -4,7 +4,6 @@ JCA
 Vaico
 """
 
-
 def crop_rect(im, area, weights, conditions = None):
     """Calculated sub area of a area based on the weights of each dimension
         * area -> (x1, y1, x2, y2)

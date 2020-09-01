@@ -12,7 +12,7 @@ JCA
 """
 import reprlib
 
-from geometry.geometries.Geometry import Geometry
+from MLinference.geometry.geometries.Geometry import Geometry
 
 
 class Polyline(Geometry):

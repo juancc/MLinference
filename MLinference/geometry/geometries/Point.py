@@ -12,7 +12,7 @@ SUPPORT
 JCA
 """
 
-from geometry.geometries.Geometry import Geometry
+from MLinference.geometry.geometries.Geometry import Geometry
 
 class Point(Geometry):
 

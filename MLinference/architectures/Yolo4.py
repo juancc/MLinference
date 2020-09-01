@@ -19,9 +19,9 @@ try:
 except ImportError:
     import tflite_runtime.interpreter as tflite
 
-from geometry.Object import Object
-from geometry.geometries.BoundBox import BoundBox
-from common.InferenceModel import InferenceModel
+from MLinference.geometry import Object
+from MLinference.geometry import BoundBox
+from MLinference.common import InferenceModel
 
 
 class Yolo4(InferenceModel):

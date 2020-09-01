@@ -1,6 +1,6 @@
 import unittest
 
-from geometry.geometries.Point import Point
+from MLinference.geometry.geometries.Point import Point
 
 
 class PointTests(unittest.TestCase):

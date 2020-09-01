@@ -55,11 +55,10 @@ ROI
 JCA
 Vaico
 """
-import json
 import logging
 
 
-from common.PredictionStrategies.auxfunc.cropper import crop_rect
+from MLinference.common.PredictionStrategies.auxfunc.cropper import crop_rect
 
 
 class Cascade:

@@ -1,0 +1,2 @@
+from MLinference.common.PredictionStrategies import Cascade
+from MLinference.common.PredictionStrategies import Multi
