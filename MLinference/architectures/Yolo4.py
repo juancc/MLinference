@@ -19,8 +19,8 @@ try:
 except Exception: # Trigger different exceptions in Python > 3.5
     import tflite_runtime.interpreter as tflite
 
-from MLinference.geometry import Object
-from MLinference.geometry import BoundBox
+from MLgeometry import Object
+from MLgeometry import BoundBox
 from MLinference.common import InferenceModel
 
 

@@ -14,14 +14,10 @@ Inputs are:
     - Subregion to be cropped from detector result
     - Subregions dict (detector-output : classifier-node)
 
-EXAMPLE
-conf:{
-    'max_concur_req': 10,
-    'main_model':{
-        'model': AbcModel
-    }
-     'sub_models':
-        {
+PARAMETERS
+    main_model = {'model': AbcModel},
+
+    sub_models ={
             'person':
 
                 [
@@ -34,7 +30,7 @@ conf:{
                 ],
             ...
         }
-}
+
 Use *all* for pass all the subregions in a classifier
 
 ROI
@@ -68,24 +64,38 @@ class Cascade:
     run on the output of the detector.
     Instantiate outside lambda_function.
     """
-    def __init__(self, conf):
+    def __init__(self, main_model, sub_models):
         """
-        :param conf: dict with loaded models and crop image configuration
+            main_model = {'model': AbcModel},
+            sub_models ={
+                    'person':
+
+                        [
+                            {
+                                'model': AbcModel,
+                                'weights': (0,0,1,1),
+                                'conditions':['square_h']
+
+                            },
+                        ],
+                    ...
+                }
         """
         self.logger = logging.getLogger(__name__)
         self.logger.info('Instantiating Cascade prediction strategy')
-        self.conf = conf
+        self.main_model = main_model
+        self.sub_models = sub_models
     def predict(self, frame):
         # Run detector
         self.logger.info('Predicting with main model on Cascade')
-        areas = self.conf['main_model']['model'].predict(frame)
+        areas = self.main_model['model'].predict(frame)
 
         # Queue prediction: one prediction run after the other
         self.logger.info('Predicting {} areas with {} sub-models'.format(len(areas), len(self.conf['sub_models'])))
         for roi in areas:
-            if roi.label in self.conf['sub_models']:
+            if roi.label in self.sub_models:
                 roi.subobject = []
-                for model in self.conf['sub_models'][roi.label]:
+                for model in self.sub_models[roi.label]:
                     area = {
                         'xmin': roi.geometry.xmin,
                         'ymin': roi.geometry.ymin,

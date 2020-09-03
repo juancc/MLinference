@@ -3,10 +3,8 @@ Multi Strategy
 General model that load a models configuration 
 Run multiple models that are independednt one for another
 
-Example of node configuration
-conf={
-    'models': [AbcModel1, AbcModel2, Cascade,...],
-}
+PARAMETERS
+    models = [AbcModel1, AbcModel2, Cascade,...]
 
 JCA
 Vaico
@@ -18,12 +16,12 @@ class Multi:
     """
     Run multiple models that are not related simultaneously
     """
-    def __init__(self, conf):
+    def __init__(self, models):
         """
-        :param conf: dict with loaded models and crop image configuration
+        :param models: [AbcModel1, AbcModel2, Cascade,...]
         """
         self.logger = logging.getLogger(__name__)
-        self.list_models = conf['models']
+        self.list_models = models
         self.logger.info('Instantiating Multi strategy with {} models'.format(len(self.list_models)))
 
 
