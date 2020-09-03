@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
   name = 'mlinference',
-  packages = ['MLinference', 'MLinference.common', 'MLinference.common.PredictionStrategies.auxfunc','MLinference.common.PredictionStrategies', 'MLinference.architectures'],
+  packages = ['MLinference', 'MLinference.common', 'MLinference.strategies.auxfunc','MLinference.strategies', 'MLinference.architectures'],
   version = '0.0.8',
   license= '',
   description = 'Packages for inference of Machine Learning models with explicit model protocol',

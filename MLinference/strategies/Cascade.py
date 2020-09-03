@@ -53,8 +53,7 @@ Vaico
 """
 import logging
 
-
-from MLinference.common.PredictionStrategies.auxfunc.cropper import crop_rect
+from MLinference.strategies.auxfunc.cropper import crop_rect
 
 
 class Cascade:
