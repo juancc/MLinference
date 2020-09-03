@@ -1,2 +1,2 @@
-from MLinference.strategies import Cascade
-from MLinference.strategies import Multi
+from MLinference.strategies.Cascade import Cascade
+from MLinference.strategies.Multi import Multi

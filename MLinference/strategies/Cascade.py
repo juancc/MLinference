@@ -81,16 +81,17 @@ class Cascade:
                 }
         """
         self.logger = logging.getLogger(__name__)
-        self.logger.info('Instantiating Cascade prediction strategy')
         self.main_model = main_model
         self.sub_models = sub_models
+        self.logger.info('Cascade strategy with {} main model and {} sub-models'.format(self.main_model,  len(self.sub_models)))
+
     def predict(self, frame):
         # Run detector
-        self.logger.info('Predicting with main model on Cascade')
+        self.logger.info('Cascade with main model {}'.format(self.main_model))
         areas = self.main_model['model'].predict(frame)
 
         # Queue prediction: one prediction run after the other
-        self.logger.info('Predicting {} areas with {} sub-models'.format(len(areas), len(self.conf['sub_models'])))
+        self.logger.info('Predicting {} areas with {} sub-models'.format(len(areas), len(self.sub_models)))
         for roi in areas:
             if roi.label in self.sub_models:
                 roi.subobject = []
@@ -105,8 +106,8 @@ class Cascade:
                     im_crop = crop_rect(
                         frame, 
                         area,
-                        model['weights'],
-                        model['conditions']
+                        model['weights'] if 'weights' in model else[0,0,1,1],
+                        model['conditions'] if 'conditions' in model else []
                     )
                     self.logger.debug('Predicting region with: {}'.format(model['model']))
                     roi.subobject.append(model['model'].predict(im_crop))

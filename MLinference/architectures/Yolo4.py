@@ -16,7 +16,7 @@ import sys
 
 try:
     import tensorflow as tf
-except Exception: # Trigger different exceptions in Python > 3.5
+except Exception:
     import tflite_runtime.interpreter as tflite
 
 from MLgeometry import Object
@@ -30,8 +30,8 @@ class Yolo4(InferenceModel):
         self.score_threshold = score_threshold
         self.overlapThresh = overlapThresh
         self.labels = {int(idx):label for idx,label in labels.items()} # fix string idx to int
-
         self.input_size = input_size
+
         if 'tensorflow' in sys.modules.keys():
             try:
                 self.interpreter = tf.lite.Interpreter(model_path=filepath)
@@ -40,6 +40,7 @@ class Yolo4(InferenceModel):
                 import tflite_runtime.interpreter as tflite
                 self.interpreter = tflite.Interpreter(model_path=filepath)
         else:
+            import tflite_runtime.interpreter as tflite
             self.interpreter = tflite.Interpreter(model_path=filepath)
         self.interpreter.allocate_tensors()
 

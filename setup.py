@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'mlinference',
   packages = ['MLinference', 'MLinference.common', 'MLinference.strategies.auxfunc','MLinference.strategies', 'MLinference.architectures'],
-  version = '0.0.8',
+  version = '0.0.9',
   license= '',
   description = 'Packages for inference of Machine Learning models with explicit model protocol',
   author = 'Juan Carlos Arbelaez',
