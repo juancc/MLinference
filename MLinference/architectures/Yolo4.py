@@ -13,6 +13,7 @@ Extend MLcommon inference abstract class and return MLgeometry objects
 import numpy as np
 import cv2 as cv
 import sys
+import logging
 
 try:
     import tensorflow as tf
@@ -21,12 +22,12 @@ except Exception:
 
 from MLgeometry import Object
 from MLgeometry import BoundBox
-from MLinference.common import InferenceModel
+from MLcommon import InferenceModel
 
 
 class Yolo4(InferenceModel):
-    def __init__(self, filepath, labels=None, input_size=416, score_threshold=0.25, overlapThresh=0.5):
-        # self.labels = self.read_class_names(labels_path) # return a dict {idx:'label'}
+    def __init__(self, filepath, labels=None, input_size=416, score_threshold=0.25, overlapThresh=0.5, *args, **kwargs):
+        self.logger = logging.getLogger(__name__)
         self.score_threshold = score_threshold
         self.overlapThresh = overlapThresh
         self.labels = {int(idx):label for idx,label in labels.items()} # fix string idx to int
@@ -36,7 +37,7 @@ class Yolo4(InferenceModel):
             try:
                 self.interpreter = tf.lite.Interpreter(model_path=filepath)
             except AttributeError as e:
-                print('Try to update Tensorflow. Error: {}'.format(e))
+                self.logger.error('Try to update Tensorflow. Error: {}'.format(e))
                 import tflite_runtime.interpreter as tflite
                 self.interpreter = tflite.Interpreter(model_path=filepath)
         else:
@@ -46,6 +47,7 @@ class Yolo4(InferenceModel):
 
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
+        self.logger.info('Loaded model from: {}'.format(filepath))
 
 
     def filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape = [416,416]):
@@ -74,7 +76,7 @@ class Yolo4(InferenceModel):
         return (boxes, pred_conf)
 
 
-    def predict(self, im):
+    def predict(self, im, *args, **kwargs):
         original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
         image_data = cv.resize(original_image, (self.input_size, self.input_size))
         image_data = image_data / 255.

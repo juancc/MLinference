@@ -2,8 +2,13 @@
 U-Net Architecture for segmentation
 Based on: "U-Net: Convolutional Networks for Biomedical Image Segmentation".
 By Ronneberger, Olaf; Fischer, Philipp; Brox, Thomas (2015).
+
+Parameters
+- labels: {idx:'label'}
+
 """
 import sys
+import logging
 
 import numpy as np
 import cv2 as cv
@@ -15,13 +20,16 @@ except Exception:
 from MLgeometry import Object
 from MLgeometry import Mask
 
-from MLinference.common import InferenceModel
+import sys
+sys.path.append('/misdoc/vaico/mlcommon/MLcommon')
+from MLcommon import InferenceModel
 
 
 class UNet(InferenceModel):
-    def __init__(self, filepath, labels=None, model_size='big', mask_threshold= 0.3):
+    def __init__(self, filepath, labels=None, model_size='big', mask_threshold= 0.3, *args, **kwargs):
+        self.logger = logging.getLogger(__name__)
         self.model_size = model_size
-        self.labels = labels if labels else {'unknown': 0}
+        self.labels = labels if labels else {0: 'unknown'}
         self.mask_threshold = mask_threshold
 
         if 'tensorflow' in sys.modules.keys():
@@ -44,8 +52,10 @@ class UNet(InferenceModel):
         # NxHxWxC, H:1, W:2
         self.height = self.input_details[0]['shape'][1]
         self.width = self.input_details[0]['shape'][2]
+        self.logger.info('Loaded model from: {}'.format(filepath))
 
-    def predict(self, im):
+
+    def predict(self, im, *args, **kwargs):
 
         original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
         if self.model_size == "big":
@@ -71,7 +81,7 @@ class UNet(InferenceModel):
         res = [
             Object(
                 Mask(mask, []),
-            list(self.labels)[0],
+            self.labels[0],
             float(np.mean(intensity_map))
             )
         ]
@@ -86,8 +96,7 @@ if __name__ == '__main__':
     from MLdrawer.drawer import draw
 
 
-    # im = cv.imread('test/data/im.png')
-    im = cv.imread('/home/juanc/Pictures/s.jpeg')
+    im = cv.imread('test/data/im.png')
     model = UNet('/home/juanc/Downloads/Unet_bordes.tflite')
     res = model.predict(im)
 

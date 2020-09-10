@@ -110,6 +110,8 @@ class Cascade:
                         model['conditions'] if 'conditions' in model else []
                     )
                     self.logger.debug('Predicting region with: {}'.format(model['model']))
-                    roi.subobject.append(model['model'].predict(im_crop))
+                    # Only append subobject if
+                    res_submodel = model['model'].predict(im_crop)
+                    if res_submodel: roi.subobject.append(res_submodel)
         self.logger.info('Returning prediction of {} objects'.format(len(areas)))
         return areas
