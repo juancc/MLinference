@@ -56,14 +56,14 @@ import logging
 from MLinference.strategies.auxfunc.cropper import crop_rect
 
 
-class Cascade:
+class Cascade():
     """
     Cascade strategy of passing the input for several models to build a final prediction.
     Usually general prediction is returned by a Detector and specialized Classifiers
     run on the output of the detector.
     Instantiate outside lambda_function.
     """
-    def __init__(self, main_model, sub_models):
+    def __init__(self, main_model, sub_models, *args, **kwargs):
         """
             main_model = {'model': AbcModel},
             sub_models ={
@@ -85,7 +85,7 @@ class Cascade:
         self.sub_models = sub_models
         self.logger.info('Cascade strategy with {} main model and {} sub-models'.format(self.main_model,  len(self.sub_models)))
 
-    def predict(self, frame):
+    def predict(self, frame, *args, **kwargs):
         # Run detector
         self.logger.info('Cascade with main model {}'.format(self.main_model))
         areas = self.main_model['model'].predict(frame)

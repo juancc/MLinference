@@ -26,7 +26,7 @@ from MLcommon import InferenceModel
 
 
 class UNet(InferenceModel):
-    def __init__(self, filepath, labels=None, model_size='big', mask_threshold= 0.3, *args, **kwargs):
+    def __init__(self, filepath, labels=None, model_size='big', mask_threshold= 0.2, *args, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.model_size = model_size
         self.labels = labels if labels else {0: 'unknown'}
@@ -55,7 +55,11 @@ class UNet(InferenceModel):
         self.logger.info('Loaded model from: {}'.format(filepath))
 
 
-    def predict(self, im, *args, **kwargs):
+    def predict(self, im, custom_labels=None, *args, **kwargs):
+        labels = dict(self.labels)
+        if custom_labels:
+            labels.update(custom_labels)
+            self.logger.info('Using custom labels for prediction')
 
         original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
         if self.model_size == "big":
@@ -73,20 +77,16 @@ class UNet(InferenceModel):
 
         output_data = self.interpreter.get_tensor(self.output_details[0]['index'])
         intensity_map = np.squeeze(output_data)
+        intensity_map = cv.threshold(intensity_map,  self.mask_threshold*intensity_map.max(), 1, cv.THRESH_TOZERO)[1]
         intensity_map = cv.resize(intensity_map, (original_image.shape[1], original_image.shape[0]))
 
-        mask = np.zeros(intensity_map.shape, np.uint8)
-        mask[intensity_map > self.mask_threshold] = 1
+        try:
+            lbl = labels[0]
+        except KeyError:
+            self.logger.error('Custom labels not provide name')
+            lbl = 'unknown'
 
-        res = [
-            Object(
-                Mask(mask, []),
-            self.labels[0],
-            float(np.mean(intensity_map))
-            )
-        ]
-
-        return res
+        return [Object(Mask(intensity_map, [], keep_mask=True), lbl, float(np.mean(intensity_map)))]
 
 
 
@@ -99,7 +99,6 @@ if __name__ == '__main__':
     im = cv.imread('test/data/im.png')
     model = UNet('/home/juanc/Downloads/Unet_bordes.tflite')
     res = model.predict(im)
-
     draw(res, im)
 
     cv.imshow('Prediction',im)

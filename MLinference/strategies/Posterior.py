@@ -22,9 +22,8 @@ class Posterior():
         self.models = models
         self.logger.info('Posterior strategy with {} models'.format(len(self.models)))
 
-    def predict(self, im, predictions):
-        self.logger.info('Posterior predictions using {} previous predictions'.format(len(predictions)))
-
+    def predict(self, im, *args, **kwargs):
+        predictions=[]
         for model in self.models:
             predictions = model.predict(im, predictions=predictions)
 

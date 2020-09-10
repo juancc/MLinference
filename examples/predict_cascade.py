@@ -18,8 +18,6 @@ model_main = Yolo4.load('/misdoc/vaico/architectures/yolov4_tflite/checkpoints/y
 model = Cascade(main_model={'model': model_main}, sub_models={'person': [{'model': model_classifier}]})
 
 
-
-
 im = cv.imread('/misdoc/vaico/MLinference/test/data/im.png')
 res = model.predict(im)
 print(res)

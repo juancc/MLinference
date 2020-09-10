@@ -30,7 +30,7 @@ class Yolo4(InferenceModel):
         self.logger = logging.getLogger(__name__)
         self.score_threshold = score_threshold
         self.overlapThresh = overlapThresh
-        self.labels = {int(idx):label for idx,label in labels.items()} # fix string idx to int
+        self.labels = {int(idx):label for idx,label in labels.items()} if labels else None# fix string idx to int
         self.input_size = input_size
 
         if 'tensorflow' in sys.modules.keys():
@@ -76,7 +76,17 @@ class Yolo4(InferenceModel):
         return (boxes, pred_conf)
 
 
-    def predict(self, im, *args, **kwargs):
+    def predict(self, im, custom_labels=None, *args, **kwargs):
+        if self.labels:
+            labels = dict(self.labels)
+            if custom_labels:
+                labels.update(custom_labels)
+                self.logger.info('Using custom labels for prediction')
+        elif not self.labels and custom_labels:
+            labels = custom_labels
+        else:
+            labels = None
+
         original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
         image_data = cv.resize(original_image, (self.input_size, self.input_size))
         image_data = image_data / 255.
@@ -101,8 +111,13 @@ class Yolo4(InferenceModel):
                 coor[2] = coor[2] * image_h # y2
                 coor[1] = coor[1] * image_w # x1
                 coor[3] = coor[3] * image_w # x2
-                
-                lbl = str(self.labels[classes[i]]) if self.labels else str(classes[i])
+
+                try:
+                    lbl = str(labels[classes[i]]) if labels else str(classes[i])
+                except KeyError:
+                    self.logger.error('Custom labels not provide name for {}. Using default'.format(classes[i]))
+                    lbl = str(classes[i])
+
                 new_obj = Object(
                     BoundBox(int(coor[1]), int(coor[0]), int(coor[3]), int(coor[2])),
                     lbl,
@@ -188,7 +203,7 @@ if __name__ == '__main__':
     im = cv.imread(img_path)
     labels =Yolo4.read_class_names('test/data/coco.nombres')
     model = Yolo4.load('/misdoc/vaico/architectures/yolov4_tflite/checkpoints/yolov4_sota.tflite',
-                           labels=labels, input_size=416)
+                           labels=None, input_size=416)
 
     res = model.predict(im)
     print(res)

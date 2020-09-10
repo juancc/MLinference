@@ -16,7 +16,7 @@ class Multi:
     """
     Run multiple models that are not related simultaneously
     """
-    def __init__(self, models):
+    def __init__(self, models, *args, **kwargs):
         """
         :param models: [AbcModel1, AbcModel2, Cascade,...]
         """
@@ -25,14 +25,14 @@ class Multi:
         self.logger.info('Instantiating Multi strategy with {} models'.format(len(self.list_models)))
 
 
-    def predict(self, frame):
+    def predict(self, frame, *args, **kwargs):
         # Run detector
         self.logger.info('Predicting with Multi strategy')
         predictions = []
         # Queue prediction: one prediction run after the other
         self.logger.info('Predicting with {} models'.format(len(self.list_models)))
         for model in self.list_models:
-            predictions.append(model.predict(frame))
+            predictions += model.predict(frame)
         self.logger.info('Returning prediction of {} objects'.format(len(predictions)))
         
         return predictions
