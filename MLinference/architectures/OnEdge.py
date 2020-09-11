@@ -10,7 +10,7 @@ from MLcommon import InferenceModel
 from MLgeometry import Object
 
 class OnEdge(InferenceModel):
-    def __init__(self, interest_labels=None, mask_label=None, threshold=0.2, labels=None, *args, **kwargs):
+    def __init__(self, filepath, interest_labels=None, mask_label=None, threshold=0.2, labels=None, *args, **kwargs):
         """
         :param interest_labels: (list) labels to be analyzed for classification
         :param threshold: (float) min value to be considered on an edge
@@ -70,3 +70,6 @@ class OnEdge(InferenceModel):
 
         return predictions
 
+if __name__ == '__main__':
+    model = OnEdge(None)
+    print(model)
