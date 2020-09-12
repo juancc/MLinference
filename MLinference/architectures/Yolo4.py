@@ -8,6 +8,7 @@ Extend MLcommon inference abstract class and return MLgeometry objects
 - input_size: trained image size
 - score_threshold: minimum prediction score
 - overlapThresh: Minimum IOU of the same class to be considered the same object
+- backend: (str) use auxiliary functions from tensorflow to predict
 
 """
 import numpy as np
@@ -26,23 +27,34 @@ from MLcommon import InferenceModel
 
 
 class Yolo4(InferenceModel):
-    def __init__(self, filepath, labels=None, input_size=416, score_threshold=0.25, overlapThresh=0.5, *args, **kwargs):
+    def __init__(self, filepath, labels=None, input_size=416, score_threshold=0.25, overlapThresh=0.5, backend='tf', *args, **kwargs):
         self.logger = logging.getLogger(__name__)
         self.score_threshold = score_threshold
         self.overlapThresh = overlapThresh
         self.labels = {int(idx):label for idx,label in labels.items()} if labels else None# fix string idx to int
         self.input_size = input_size
 
-        if 'tensorflow' in sys.modules.keys():
+        self.backend = backend
+        if 'tensorflow' in sys.modules.keys() and backend=='tf':
             try:
                 self.interpreter = tf.lite.Interpreter(model_path=filepath)
             except AttributeError as e:
-                self.logger.error('Try to update Tensorflow. Error: {}'.format(e))
+                self.logger.error('Cant not use tf backend. Try to update Tensorflow>2.2. Error: {}'.format(e))
                 import tflite_runtime.interpreter as tflite
                 self.interpreter = tflite.Interpreter(model_path=filepath)
+                self.backend = 'tflite'
         else:
-            import tflite_runtime.interpreter as tflite
-            self.interpreter = tflite.Interpreter(model_path=filepath)
+            try:
+                import tflite_runtime.interpreter as tflite
+                self.interpreter = tflite.Interpreter(model_path=filepath)
+            except Exception as e:
+                self.logger.error('Cant not use tflite backend. Error: {}'.format(e))
+                self.interpreter = tf.lite.Interpreter(model_path=filepath)
+                self.backend = 'tf'
+
+        self.logger.info('Using {} backend'.format(self.backend))
+        if self.backend == 'tf': self.predict = self.tf_predict
+
         self.interpreter.allocate_tensors()
 
         self.input_details = self.interpreter.get_input_details()
@@ -77,6 +89,7 @@ class Yolo4(InferenceModel):
 
 
     def predict(self, im, custom_labels=None, *args, **kwargs):
+        """Prediction using tflite interpreter"""
         if self.labels:
             labels = dict(self.labels)
             if custom_labels:
@@ -191,6 +204,107 @@ class Yolo4(InferenceModel):
             for ID, name in enumerate(data):
                 names[ID] = name.strip('\n')
         return names
+
+    def tf_filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape=tf.constant([416, 416])):
+        scores_max = tf.math.reduce_max(scores, axis=-1)
+
+        mask = scores_max >= score_threshold
+        class_boxes = tf.boolean_mask(box_xywh, mask)
+        pred_conf = tf.boolean_mask(scores, mask)
+        class_boxes = tf.reshape(class_boxes, [tf.shape(scores)[0], -1, tf.shape(class_boxes)[-1]])
+        pred_conf = tf.reshape(pred_conf, [tf.shape(scores)[0], -1, tf.shape(pred_conf)[-1]])
+
+        box_xy, box_wh = tf.split(class_boxes, (2, 2), axis=-1)
+
+        input_shape = tf.cast(input_shape, dtype=tf.float32)
+
+        box_yx = box_xy[..., ::-1]
+        box_hw = box_wh[..., ::-1]
+
+        box_mins = (box_yx - (box_hw / 2.)) / input_shape
+        box_maxes = (box_yx + (box_hw / 2.)) / input_shape
+        boxes = tf.concat([
+            box_mins[..., 0:1],  # y_min
+            box_mins[..., 1:2],  # x_min
+            box_maxes[..., 0:1],  # y_max
+            box_maxes[..., 1:2]  # x_max
+        ], axis=-1)
+        # return tf.concat([boxes, pred_conf], axis=-1)
+        return (boxes, pred_conf)
+
+    def tf_predict(self, im, custom_labels=None, *args, **kwargs):
+        """Predict using tensorflow backend"""
+        if self.labels:
+            labels = dict(self.labels)
+            if custom_labels:
+                labels.update(custom_labels)
+                self.logger.info('Using custom labels for prediction')
+        elif not self.labels and custom_labels:
+            labels = custom_labels
+        else:
+            labels = None
+
+        original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
+        image_data = cv.resize(original_image, (self.input_size, self.input_size))
+        image_data = image_data / 255.
+        images_data = [image_data]
+        images_data = np.asarray(images_data).astype(np.float32)
+
+        self.interpreter.set_tensor(self.input_details[0]['index'], images_data)
+        self.interpreter.invoke()
+
+        pred = [self.interpreter.get_tensor(self.output_details[i]['index']) for i in range(len(self.output_details))]
+
+        boxes, pred_conf = self.tf_filter_boxes(pred[0], pred[1], score_threshold=0.25,
+                                             input_shape=tf.constant([self.input_size, self.input_size]))
+
+        boxes, scores, classes, valid_detections = tf.image.combined_non_max_suppression(
+            boxes=tf.reshape(boxes, (tf.shape(boxes)[0], -1, 1, 4)),
+            scores=tf.reshape(
+                pred_conf, (tf.shape(pred_conf)[0], -1, tf.shape(pred_conf)[-1])),
+            max_output_size_per_class=50,
+            max_total_size=50,
+            iou_threshold=0.5,
+            score_threshold=0.25
+        )
+        pred_bbox = [boxes.numpy(), scores.numpy(), classes.numpy(), valid_detections.numpy()]
+        return self.tf_cast_bbox(im, pred_bbox, labels)
+
+    def tf_cast_bbox(self, image, bboxes, labels, show_label=True):
+        """Cast to ML geometries"""
+        res = []
+        num_classes = len(labels)
+        image_h, image_w, _ = image.shape
+        out_boxes, out_scores, out_classes, num_boxes = bboxes
+        for i in range(num_boxes[0]):
+            if int(out_classes[0][i]) < 0 or int(out_classes[0][i]) > num_classes: continue
+            coor = out_boxes[0][i]
+            coor[0] = int(coor[0] * image_h)
+            coor[2] = int(coor[2] * image_h)
+            coor[1] = int(coor[1] * image_w)
+            coor[3] = int(coor[3] * image_w)
+
+            score = out_scores[0][i]
+            class_ind = int(out_classes[0][i])
+
+            try:
+                lbl = str(labels[class_ind]) if labels else str(class_ind)
+            except KeyError:
+                self.logger.error('Custom labels not provide name for {}. Using default'.format(class_ind[i]))
+                lbl = str(class_ind[i])
+
+            new_obj = Object(
+                BoundBox(int(coor[1]), int(coor[0]), int(coor[3]), int(coor[2])),
+                lbl,
+                float(score),
+                subobject=None)
+            res.append(new_obj)
+
+        return res
+
+
+
+
 
 
 if __name__ == '__main__':
