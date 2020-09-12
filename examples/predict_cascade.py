@@ -1,15 +1,11 @@
-import sys
-#sys.path.append('/misdoc/vaico/MLinference')
-sys.path.append('/misdoc/vaico/architectures/kerasclassifiers')
-
 import cv2 as cv
 
 from MLinference.architectures import Yolo4
-from kerasClassifiers.KerasClassifiers import KerasClassifiers
+from MLinference.architectures import KerasClassifiers
 from MLinference.strategies import Cascade
 
 
-model_classifier = KerasClassifiers.load('/misdoc/vaico/models/Classifiers/PPE/helmet/helmets_resnet50-AI_fullbody-beta.ml')
+model_classifier = KerasClassifiers.load('/home/juanc/Downloads/cascos_resnet50-20200801.ml')
 labels =Yolo4.read_class_names('/misdoc/vaico/MLinference/test/data/coco.names')
 model_main = Yolo4.load('/misdoc/vaico/architectures/yolov4_tflite/checkpoints/yolov4_sota.tflite',
                        labels=labels, 

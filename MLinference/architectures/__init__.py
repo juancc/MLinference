@@ -5,6 +5,11 @@ try:
 except ImportError as e:
     print('Error: "{}" trying to import Yolo4 and UNet'.format(e))
 try:
+    # Keras architectures
+    from MLinference.architectures.KerasClassifiers import KerasClassifiers
+except ImportError as e:
+    print('Error: "{}" trying to import KerasClassifier'.format(e))
+try:
     # Opencv architectures
     from MLinference.architectures.ArUco import ArUco
 except ImportError as e:
