@@ -8,6 +8,7 @@ import logging
 
 from MLcommon import InferenceModel
 from MLgeometry import Object
+from MLgeometry import creator
 
 class OnEdge(InferenceModel):
     def __init__(self, filepath, interest_labels=None, mask_label=None, threshold=0.2, labels=None, *args, **kwargs):
@@ -33,6 +34,8 @@ class OnEdge(InferenceModel):
 
     def predict(self, x, predictions=None, custom_labels=None, *args, **kwargs):
         if predictions:
+            if isinstance(predictions[0], dict):
+                predictions = creator.from_dict(predictions)
             if self.labels:
                 labels = dict(self.labels)
                 if custom_labels:

@@ -1,8 +1,8 @@
 from distutils.core import setup
 setup(
   name = 'mlinference',
-  packages = ['MLinference', 'MLinference.common', 'MLinference.strategies.auxfunc','MLinference.strategies', 'MLinference.architectures'],
-  version = '0.0.9',
+  packages = ['MLinference', 'MLinference.strategies.auxfunc','MLinference.strategies', 'MLinference.architectures'],
+  version = '0.0.1',
   license= '',
   description = 'Packages for inference of Machine Learning models with explicit model protocol',
   author = 'Juan Carlos Arbelaez',
@@ -10,7 +10,7 @@ setup(
   url = 'https://jarbest@bitbucket.org/jarbest/mlinference.git',
   download_url = 'https://bitbucket.org/jarbest/mlinference/get/master.tar.gz',
   keywords = ['vaico', 'common', 'ml', 'computer vision', 'machine learning'],
-  install_requires=['numpy', 'opencv-python', 'MLgeometry'],
+  install_requires=['numpy', 'opencv-python', 'MLgeometry', 'MLcommon', 'opencv-contrib-python', 'tensorflow'],
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
