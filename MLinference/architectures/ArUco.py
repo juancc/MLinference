@@ -45,7 +45,7 @@ class ArUco(InferenceModel):
         marker_corners, marker_ids, rejected_candidates = cv.aruco.detectMarkers(im, self.dictionary, parameters=self.parameters)
 
         res = None
-        if marker_ids:
+        if marker_ids is not None:
             # Find the most common marker in ROI (Mode)
             (_, idx, counts) = np.unique(marker_ids, return_index=True, return_counts=True)
             index = idx[np.argmax(counts)]
@@ -67,6 +67,7 @@ class ArUco(InferenceModel):
 
 if __name__ == '__main__':
     im = cv.imread('test/data/marker_1.png')
+
     ar_dict = 10
     model = ArUco(None, ar_dict=ar_dict, labels={1:'juan'})
     res = model.predict(im, custom_labels={33:'carlos'})

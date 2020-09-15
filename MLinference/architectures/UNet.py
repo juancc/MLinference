@@ -43,7 +43,6 @@ class UNet(InferenceModel):
             import tflite_runtime.interpreter as tflite
             self.interpreter = tflite.Interpreter(model_path=filepath)
 
-        self.interpreter = tflite.Interpreter(model_path=filepath)
         self.interpreter.allocate_tensors()
 
         self.input_details = self.interpreter.get_input_details()
