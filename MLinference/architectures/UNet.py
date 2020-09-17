@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
 
     im = cv.imread('test/data/im.png')
-    model = UNet('/home/juanc/Downloads/Unet_bordes.tflite')
+    model = UNet('/home/juanc/Downloads/bordes_Unet-20200901.tflite')
     res = model.predict(im)
     draw(res, im)
 

@@ -36,6 +36,7 @@ class OnEdge(InferenceModel):
         if predictions:
             if isinstance(predictions[0], dict):
                 predictions = creator.from_dict(predictions)
+            
             if self.labels:
                 labels = dict(self.labels)
                 if custom_labels:
@@ -45,6 +46,7 @@ class OnEdge(InferenceModel):
                 labels = custom_labels
             else:
                 labels = None
+            
             # Get mask
             mask_obj = self.find_mask(predictions)
             if mask_obj:
@@ -74,5 +76,14 @@ class OnEdge(InferenceModel):
         return predictions
 
 if __name__ == '__main__':
-    model = OnEdge(None)
+    import json
+
+    with open('/home/juanc/pred.json', 'r') as f:
+        preds = json.load(f)
+
+    model = OnEdge(None, interest_labels=['persona'],  mask_label='borde',
+                   labels={0:'lejos de borde', 1:'cerca de borde'})
     print(model)
+
+    res = model.predict(None, preds['predictions'])
+    print(res)

@@ -47,11 +47,11 @@ class Yolo4(InferenceModel):
             try:
                 import tflite_runtime.interpreter as tflite
                 self.interpreter = tflite.Interpreter(model_path=filepath)
+                self.backend = 'tflite'
             except Exception as e:
                 self.logger.error('Cant not use tflite backend. Error: {}'.format(e))
                 self.interpreter = tf.lite.Interpreter(model_path=filepath)
                 self.backend = 'tf'
-
         self.logger.info('Using {} backend'.format(self.backend))
         if self.backend == 'tf': self.predict = self.tf_predict
 
@@ -205,7 +205,8 @@ class Yolo4(InferenceModel):
                 names[ID] = name.strip('\n')
         return names
 
-    def tf_filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape=tf.constant([416, 416])):
+    def tf_filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape=None):
+        input_shape = input_shape if input_shape else tf.constant([416, 416])
         scores_max = tf.math.reduce_max(scores, axis=-1)
 
         mask = scores_max >= score_threshold
