@@ -14,6 +14,11 @@ try:
     from MLinference.architectures.ArUco import ArUco
 except Exception as e:
     print('Error: "{}" trying to import ArUco'.format(e))
+try:
+    # Keras and Tensorflow architectures
+    from MLinference.architectures.maskrcnn.MaskRcnn import MaskRcnn
+except Exception as e:
+    print('Error: "{}" trying to import MaskRcnn'.format(e))
 
 # No especial dependencies
 from MLinference.architectures.OnEdge import OnEdge

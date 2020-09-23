@@ -12,6 +12,7 @@ dist/
 
 # Compiled Python bytecode
 *.py[cod]
+*__pycache__
 
 # Log files
 *.log
@@ -23,8 +24,9 @@ dist/
 target/
 dist/
 
-# JetBrains IDE
+# JetBrains IDE & VS
 .idea/
+.vscode
 
 # Unit test reports
 TEST*.xml
@@ -47,4 +49,6 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-/venv/
+
+# Virtual Envs
+/venv*

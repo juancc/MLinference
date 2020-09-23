@@ -205,8 +205,8 @@ class Yolo4(InferenceModel):
                 names[ID] = name.strip('\n')
         return names
 
-    def tf_filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape=None):
-        input_shape = input_shape if input_shape else tf.constant([416, 416])
+    def tf_filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape=[416, 416]):
+        input_shape = tf.constant(input_shape)
         scores_max = tf.math.reduce_max(scores, axis=-1)
 
         mask = scores_max >= score_threshold
