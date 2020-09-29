@@ -50,7 +50,7 @@ from keras.preprocessing.image import img_to_array
 from MLcommon import AbcModel
 from MLgeometry.Object import Object
 
-from MLinference.architectures import KerasClassifiers_interface as interface
+from MLinference.architectures.kerasClassifiers import interface
 
 LOGGER = logging.getLogger(__name__)
 
@@ -86,12 +86,13 @@ class KerasClassifiers(AbcModel):
         'train_finetune_layers': None  # integer counting from last layer, number of layers to be trained
     }
 
-    def __init__(self, conf):
+    def __init__(self, conf, *args, **kwargs):
         # Keras models interfaces defined in auxfunc.interface
+        conf.update(kwargs)
         self.interface = getattr(interface, conf.get('feature_extractor', self._defaults['feature_extractor'])['model'])
         super().__init__(**conf)
 
-    def predict(self, x ):
+    def predict(self, x, *args, **kwrags):
         if not isinstance(x, np.ndarray):  # Loaded with keras -> image.load_image
             x = img_to_array(x)
         else:  # Loaded with OpenCV

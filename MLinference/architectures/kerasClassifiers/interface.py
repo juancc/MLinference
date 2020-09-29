@@ -1,5 +1,6 @@
 from keras import applications
 
+
 class mobilenet:
     model = applications.mobilenet.MobileNet
     decode_predictions = applications.mobilenet.decode_predictions
@@ -46,39 +47,60 @@ class vgg19:
     preprocess_input = applications.vgg19.preprocess_input
 
 class resnet101:
-    model = applications.resnet.ResNet101
-    decode_predictions = applications.resnet.decode_predictions
-    preprocess_input = applications.resnet.preprocess_input
+    try:
+        model = applications.resnet.ResNet101
+        decode_predictions = applications.resnet.decode_predictions
+        preprocess_input = applications.resnet.preprocess_input
+    except AttributeError:
+        print('Update Keras for use resnet101')
 
 class resnet152:
-    model = applications.resnet.ResNet152
-    decode_predictions = applications.resnet.decode_predictions
-    preprocess_input = applications.resnet.preprocess_input
+    try:
+        model = applications.resnet.ResNet152
+        decode_predictions = applications.resnet.decode_predictions
+        preprocess_input = applications.resnet.preprocess_input
+    except AttributeError:
+        print('Update Keras for use resnet152')
 
 class resnet50v2:
-    model = applications.resnet_v2.ResNet50V2
-    decode_predictions = applications.resnet_v2.decode_predictions
-    preprocess_input = applications.resnet_v2.preprocess_input
+    try:
+        model = applications.resnet_v2.ResNet50V2
+        decode_predictions = applications.resnet_v2.decode_predictions
+        preprocess_input = applications.resnet_v2.preprocess_input
+    except AttributeError:
+        print('Update Keras for use resnet50v2')
 
 class resnet101v2:
-    model = applications.resnet_v2.ResNet101V2
-    decode_predictions = applications.resnet_v2.decode_predictions
-    preprocess_input = applications.resnet_v2.preprocess_input
+    try:
+        model = applications.resnet_v2.ResNet101V2
+        decode_predictions = applications.resnet_v2.decode_predictions
+        preprocess_input = applications.resnet_v2.preprocess_input
+    except AttributeError:
+        print('Update Keras for use resnet101v2')
 
 class resnet152v2:
-    model = applications.resnet_v2.ResNet152V2
-    decode_predictions = applications.resnet_v2.decode_predictions
-    preprocess_input = applications.resnet_v2.preprocess_input
+    try:
+        model = applications.resnet_v2.ResNet152V2
+        decode_predictions = applications.resnet_v2.decode_predictions
+        preprocess_input = applications.resnet_v2.preprocess_input
+    except AttributeError:
+        print('Update Keras for use resnet152v2')
 
-# class resnext50:
-#     model = applications.keras_applications.resnext.ResNeXt50
-#     decode_predictions = applications.keras_applications.resnext.decode_predictions
-#     preprocess_input = applications.keras_applications.resnext.preprocess_input
+class resnext50:
+    try:
+        model = applications.keras_applications.resnext.ResNeXt50
+        decode_predictions = applications.keras_applications.resnext.decode_predictions
+        preprocess_input = applications.keras_applications.resnext.preprocess_input
+    except AttributeError:
+        print('resnext50 only available in Keras v1.0.8. Downgrade if want to use it')
 
-# class resnext101:
-#     model = applications.keras_applications.resnext.ResNeXt101
-#     decode_predictions = applications.keras_applications.resnext.decode_predictions
-#     preprocess_input = applications.keras_applications.resnext.preprocess_input
+class resnext101:
+    try:
+        model = applications.keras_applications.resnext.ResNeXt101
+        decode_predictions = applications.keras_applications.resnext.decode_predictions
+        preprocess_input = applications.keras_applications.resnext.preprocess_input
+    except AttributeError:
+        print('resnext101 only available in Keras v1.0.8.  Downgrade if want to use it')
 
 class inceptionv3:
     model = applications.inception_v3.InceptionV3
@@ -119,8 +141,3 @@ class mobilenetv2:
     model = applications.mobilenet_v2.MobileNetV2
     decode_predictions = applications.mobilenet_v2.decode_predictions
     preprocess_input = applications.mobilenet_v2.preprocess_input
-
-
-
-
-
