@@ -6,7 +6,7 @@ except Exception as e:
     print('Error: "{}" trying to import Yolo4 and UNet'.format(e))
 try:
     # Keras architectures
-    from MLinference.architectures.KerasClassifiers import KerasClassifiers
+    from MLinference.architectures.kerasClassifiers.KerasClassifiers import KerasClassifiers
 except Exception as e:
     print('Error: "{}" trying to import KerasClassifier'.format(e))
 try:

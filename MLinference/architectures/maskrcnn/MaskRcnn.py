@@ -39,13 +39,14 @@ class MaskRcnn(AbcModel):
         "learning_r": 0.001,
         "training_layers": "heads",  # or "all" to fine tuning
         "labels": ['BG', 'Object'],
-        "single_class": False,
+        "single_class": False, # Prediction mask as one for all the predicted objects
+        "mask_scale": 1, # Prediction mask geometry scale
         "max_mask_elements": None  # max number of elements to predict with unique mask. Avoid resources consumption
 
     }
 
-    def __init__(self, conf):
-
+    def __init__(self, conf, *args, **kwargs):
+        conf.update(kwargs)
         super().__init__(**conf)
 
     def load_config(self):
@@ -112,7 +113,7 @@ class MaskRcnn(AbcModel):
         """Return required raw data for saving a self-included model"""
         return self.model.keras_model.get_weights()
 
-    def predict(self, x, single_class=False, max_mask_elements=None, *args, **kwargs):
+    def predict(self, x, single_class=False, max_mask_elements=None, mask_scale=None, *args, **kwargs):
         """
         MaskRCNN internal model output:
             rois: [N, (y1, x1, y2, x2)] detection bounding boxes
@@ -122,39 +123,45 @@ class MaskRcnn(AbcModel):
 
         :param single_class: (bool) Predictions belong only to one class. Masks will be collapsed into a single one
         :param max_mask_elements (int) Max number of elements to have unique mask
+        :param mask_scale: (float) Prediction Mask geometry scale
         """
+        # Mask geometry optimization for saving space
         single_class = single_class if single_class else self.single_class
+        mask_scale = mask_scale if mask_scale else self.mask_scale
+
         max_mask_elements = max_mask_elements if max_mask_elements else self.max_mask_elements
         preds = self.model.detect([x], verbose=1)
         objs = []
+        try:
+            if single_class:
+                mask_collapsed = np.sum(preds[0]['masks'], axis=2)
+                mask_collapsed = np.clip(mask_collapsed, 0, 1)
+                mask_geometry = Mask(mask_collapsed, preds[0]['rois'], scale=mask_scale)
 
-        if single_class:
-            mask_collapsed = np.sum(preds[0]['masks'], axis=2)
-            mask_collapsed = np.clip(mask_collapsed, 0, 1)
-            mask_geometry = Mask(mask_collapsed, preds[0]['rois'])
-
-            objs.append(Object(
-                geometry=mask_geometry,
-                label=self.labels[preds[0]['class_ids'][0]],
-                score=np.mean(preds[0]['scores'])))
-        else:
-            single_mask = None
-            if max_mask_elements:
-                if len(preds[0]['class_ids']) > max_mask_elements:
-                    # use a unique mask for all
-                    mask_collapsed = np.sum(preds[0]['masks'], axis=2)
-                    mask_collapsed = np.clip(mask_collapsed, 0, 1)
-                    single_mask = Mask(mask_collapsed, preds[0]['rois'])
-
-            for i in range(preds[0]['class_ids'].shape[0]):
-                if single_mask:
-                    mask_geometry = single_mask
-                else:
-                    mask_geometry = Mask(preds[0]['masks'][:,:,i], [preds[0]['rois'][i]])
                 objs.append(Object(
                     geometry=mask_geometry,
-                    label=self.labels[preds[0]['class_ids'][i]],
-                    score=preds[0]['scores'][i]))
+                    label=self.labels[preds[0]['class_ids'][0]],
+                    score=np.mean(preds[0]['scores'])))
+            else:
+                single_mask = None
+                if max_mask_elements:
+                    if len(preds[0]['class_ids']) > max_mask_elements:
+                        # use a unique mask for all
+                        mask_collapsed = np.sum(preds[0]['masks'], axis=2)
+                        mask_collapsed = np.clip(mask_collapsed, 0, 1)
+                        single_mask = Mask(mask_collapsed, preds[0]['rois'], scale=mask_scale)
+
+                for i in range(preds[0]['class_ids'].shape[0]):
+                    if single_mask:
+                        mask_geometry = single_mask
+                    else:
+                        mask_geometry = Mask(preds[0]['masks'][:,:,i], [preds[0]['rois'][i]], scale=mask_scale)
+                    objs.append(Object(
+                        geometry=mask_geometry,
+                        label=self.labels[preds[0]['class_ids'][i]],
+                        score=preds[0]['scores'][i]))
+        except IndexError:
+            LOGGER.info('Not found objects on frame')
 
         return objs
 

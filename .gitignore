@@ -52,3 +52,6 @@ Thumbs.db
 
 # Virtual Envs
 /venv*
+
+# Zip
+zip/python
