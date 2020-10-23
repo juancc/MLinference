@@ -83,7 +83,8 @@ class KerasClassifiers(AbcModel):
             'decay': 0.0
         },
         'train_callbacks': None,  # Dict: {'EarlyStopping':{'monitor='val_loss''}, 'ModelCheckpoint', 'TensorBoard'}
-        'train_finetune_layers': None  # integer counting from last layer, number of layers to be trained
+        'train_finetune_layers': None,  # integer counting from last layer, number of layers to be trained
+        'pred_threshold': 0, # Minimum score value of prediction to return object
     }
 
     def __init__(self, conf, *args, **kwargs):
@@ -92,7 +93,13 @@ class KerasClassifiers(AbcModel):
         self.interface = getattr(interface, conf.get('feature_extractor', self._defaults['feature_extractor'])['model'])
         super().__init__(**conf)
 
-    def predict(self, x, *args, **kwrags):
+    def predict(self, x, pred_threshold=None, custom_labels=None, *args, **kwrags):
+        labels = None
+        if custom_labels: 
+            LOGGER.info('Using custom labels for prediction')
+            labels = dict(self.labels).update(custom_labels)
+        threshold = pred_threshold if pred_threshold else self.pred_threshold
+
         if not isinstance(x, np.ndarray):  # Loaded with keras -> image.load_image
             x = img_to_array(x)
         else:  # Loaded with OpenCV
@@ -108,14 +115,16 @@ class KerasClassifiers(AbcModel):
             object_name = decoded_preds[0][1]
             score = decoded_preds[0][2]
         else:
-            decoded_preds = self.decode_predictions(preds, top=3)[0]
+            decoded_preds = self.decode_predictions(preds, top=3, custom_labels=labels)[0]
             object_name = decoded_preds[0]
             score = decoded_preds[1]
-        obj = Object(
-            label=object_name,
-            score=score
-        )
-        return [obj]
+        resp = []
+        if score > threshold:
+            resp.append(Object(
+                label=object_name,
+                score=score
+            ))
+        return resp
 
     def train(self, dataset, *args, **kargs):
         pass
@@ -172,13 +181,14 @@ class KerasClassifiers(AbcModel):
 
         return model
 
-    def decode_predictions(self, preds, top=5):
+    def decode_predictions(self, preds, top=5, custom_labels=None):
+        labels = custom_labels if custom_labels else self.labels
         results = []
         for pred in preds:
             top_indices = pred.argsort()[-top:][::-1]
             for i in top_indices:
                 each_result = []
-                each_result.append(self.labels[i])
+                each_result.append(labels[i])
                 each_result.append(pred[i])
                 results.append(each_result)
 

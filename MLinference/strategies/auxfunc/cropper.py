@@ -4,7 +4,7 @@ JCA
 Vaico
 """
 
-def crop_rect(im, area, weights, conditions = None):
+def crop_rect(im, area, weights, conditions=None):
     """Calculated sub area of a area based on the weights of each dimension
         * area -> (x1, y1, x2, y2)
          BoundBox(xmin, ymin, xmax, ymax)
@@ -102,3 +102,31 @@ def crop_rect(im, area, weights, conditions = None):
 
 def clip(n):
     return n if n>0 else 0
+
+
+
+if __name__ == "__main__":
+    import cv2 as cv
+    im = cv.imread('test/data/im.png')
+
+    start_point = (222,181)
+    end_point = (278,390)
+    im = cv.rectangle(im, start_point, end_point, (255,0,0), 2) 
+    
+    # Crop
+    weights = (0,-0.05,1.2,1.1)
+    conditions = ['center_x', 'center_y']
+    area = {
+        'xmin': start_point[0],
+        'ymin': start_point[1],
+        'xmax': end_point[0],
+        'ymax': end_point[1],
+    }
+    print(area)
+    crop = crop_rect(im, area, weights, conditions=conditions)
+
+
+    cv.imshow('im', im)
+    cv.imshow('im', crop)
+    cv.waitKey(0)
+    cv.destroyAllWindows()

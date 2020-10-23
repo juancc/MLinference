@@ -1,7 +1,6 @@
 numpy
 opencv-python
 opencv-contrib-python
-tflite_runtime
 MLgeometry
 MLcommon
 tensorflow==2.2.0
