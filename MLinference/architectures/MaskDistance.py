@@ -16,7 +16,7 @@ from MLgeometry import creator
 
 class MaskDistance(InferenceModel):
     def __init__(self, filepath, interest_labels=None, mask_label=None, threshold=1,
-    thrs_mask=0.45, obj_scale=1.12, labels=None, *args, **kwargs):
+    thrs_mask=0.45, obj_scale=1.12, labels=None, debug=False, *args, **kwargs):
         """
         :param interest_labels: (list) labels to be analyzed for classification
         :param threshold: (float) min value to be considered to belong to class 0
@@ -32,6 +32,7 @@ class MaskDistance(InferenceModel):
         self.threshold = threshold 
         self.labels = labels
         self.obj_scale = obj_scale
+        self.debug = debug
 
         self.logger.info('Instantiated MaskDistance for {}'.format(self.interest_labels))
 
@@ -47,6 +48,7 @@ class MaskDistance(InferenceModel):
 
     def predict(self, x, predictions=None, custom_labels=None, debug=False, *args, **kwargs):
         """ If debug x will be drawn"""
+        debug = debug if debug else self.debug
         # For custom labels
         if self.labels:
             labels = dict(self.labels)
