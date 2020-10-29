@@ -46,8 +46,7 @@ class MaskDistance(InferenceModel):
 
 
     def predict(self, x, predictions=None, custom_labels=None, debug=False, *args, **kwargs):
-        im = None # for debugging
-
+        """ If debug x will be drawn"""
         # For custom labels
         if self.labels:
             labels = dict(self.labels)
@@ -84,9 +83,6 @@ class MaskDistance(InferenceModel):
                 
                 # Get coords of pixels>0
                 mask_coords = np.argwhere(ths.transpose()>0)
-                if not x is None and debug:
-                    im = np.array(x)
-
                 for p in predictions:
                     if p.label in self.interest_labels:
                         roi = p.geometry
@@ -108,17 +104,17 @@ class MaskDistance(InferenceModel):
                         # Testing
                         if debug:
                             min_dist_idx = np.argmin(dist)
-                            near_coord = mask_coords[min_dist_idx] # transform back to image coords
+                            near_coord = mask_coords[min_dist_idx] # transform back to xage coords
                             start_point = (int(midp[0]), int(midp[1]))
                             end_point = (int(near_coord[0]), int(near_coord[1]))
                             if not x is None:
-                                im[mask > 0] = (0,255,0)
+                                x[mask > 0] = (0,255,0)
                                 
                                 pt1 = (int(roi.xmin), int(roi.ymin))
                                 pt2 = (int(roi.xmax), int(roi.ymax))
-                                cv.rectangle(im, pt1, pt2, (0,0,255), 2) 
+                                cv.rectangle(x, pt1, pt2, (0,0,255), 2) 
 
-                                cv.line(im, start_point, end_point, (255,0,0), 2)
+                                cv.line(x, start_point, end_point, (255,0,0), 2)
                         
                         # Add subobject to prediction
                         idx= 1 if min_dist>self.threshold else 0
@@ -142,13 +138,11 @@ class MaskDistance(InferenceModel):
                             p.subobject.append(new_obj)
                         else:
                             p.subobject = [new_obj]
-                if not im is None: 
-                    show_im(im)
 
         return predictions
 
-def show_im(im):
-    cv.imshow('window_name', im)
+def show_im(x):
+    cv.imshow('window_name', x)
     cv.waitKey(0)
     cv.destroyAllWindows()
 
@@ -166,3 +160,4 @@ if __name__ == '__main__':
     # print(model)
     res = model.predict(im, preds, debug=True)
     print(res)
+    show_im(im)
