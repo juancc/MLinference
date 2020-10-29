@@ -21,4 +21,4 @@ except Exception as e:
     print('Error: "{}" trying to import MaskRcnn'.format(e))
 
 # No especial dependencies
-from MLinference.architectures.OnEdge import OnEdge
+from MLinference.architectures.MaskProbability import MaskProbability
