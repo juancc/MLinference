@@ -12,13 +12,21 @@ from numpy import linalg as LA
 
 from MLcommon import InferenceModel
 from MLgeometry import Object
-from MLgeometry import creator
+from MLgeometry.geometries import Line
 
 class MaskDistance(InferenceModel):
-    def __init__(self, filepath, interest_labels=None, mask_label=None, threshold=1,
-    thrs_mask=0.45, obj_scale=1.12, labels=None, debug=False, *args, **kwargs):
+    def __init__(self, filepath, interest_labels=None, mask_label=None,
+    thrs_mask=0.45, labels=None, debug=False, def_obj_scale=1.1, def_pred_threshold=1, *args, **kwargs):
         """
-        :param interest_labels: (list) labels to be analyzed for classification
+        :param interest_labels: (dict) labels to be analyzed for classification 
+            with its corresponding obj_scale: (float) relative scale interest_labels and its pred_threshold
+            {
+                'label':{
+                    'obj_scale': 1.1,
+                    'pred_threshold': 1
+                }
+            }
+            ** If not specified. defaults will be used. 
         :param threshold: (float) min value to be considered to belong to class 0
         :param labels: (dict) {idx: label} 0: away from edge
         :param mask_label: (str) name of the label of the mask object
@@ -29,14 +37,17 @@ class MaskDistance(InferenceModel):
         self.interest_labels = interest_labels
         self.mask_label = mask_label
         self.thrs_mask = thrs_mask
-        self.threshold = threshold 
         self.labels = labels
-        self.obj_scale = obj_scale
         self.debug = debug
 
-        self.logger.info('Instantiated MaskDistance for {}'.format(self.interest_labels))
+        # Default values
+        self.def_obj_scale = def_obj_scale
+        self.def_pred_threshold = def_pred_threshold
+
+        self.logger.info('Instantiated MaskDistance for {}'.format(list(self.interest_labels)))
 
     def find_mask(self, predictions):
+        """Find mask object and handle if mask should be kept"""
         for p in predictions:
             if p.label.lower() == self.mask_label.lower():
                 return p
@@ -46,8 +57,11 @@ class MaskDistance(InferenceModel):
 	    return (int((ptA[0] + ptB[0]) * 0.5), int((ptB[1])))
 
 
-    def predict(self, x, predictions=None, custom_labels=None, debug=False, *args, **kwargs):
-        """ If debug x will be drawn"""
+    def predict(self, x, predictions=None, custom_labels=None, debug=False, keep_mask=True ,*args, **kwargs):
+        """
+        :param keep_mask: (bool) this parameter will be passed to the geometry of the mask object. 
+            False: mask as matrix will not be stored only indexs
+        :param debug: (bool) x will be drawn"""
         debug = debug if debug else self.debug
         # For custom labels
         if self.labels:
@@ -62,7 +76,7 @@ class MaskDistance(InferenceModel):
 
         if predictions:
             if isinstance(predictions[0], dict):
-                predictions = creator.from_dict(predictions)
+                predictions = Object.from_dict(predictions)
             
             if self.labels:
                 labels = dict(self.labels)
@@ -79,6 +93,10 @@ class MaskDistance(InferenceModel):
             if mask_obj:
                 # Preprocess mask
                 mask = mask_obj.geometry.mask
+
+                # Change if mask should me kept
+                mask_obj.geometry.keep_mask = keep_mask
+
                 ths = cv.threshold(mask, self.thrs_mask*mask.max(), 1,cv.THRESH_TOZERO)[1]
                 ths = cv.adaptiveThreshold(np.uint8(ths*255), 0.8, 
                     cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 5)
@@ -87,6 +105,18 @@ class MaskDistance(InferenceModel):
                 mask_coords = np.argwhere(ths.transpose()>0)
                 for p in predictions:
                     if p.label in self.interest_labels:
+                        # Get threshold and scale for each class
+                        if 'pred_threshold' not in self.interest_labels[p.label]:
+                            self.logger.info(f'Using default value: {self.def_pred_threshold} of "pred_threshold" for {p.label}')
+                            pred_threshold = self.def_pred_threshold
+                        else:
+                            pred_threshold = self.interest_labels[p.label]['pred_threshold']
+                        if 'obj_scale' not in self.interest_labels[p.label]:
+                            self.logger.info(f'Using default value: {self.def_obj_scale} of "obj_scale" for {p.label}')
+                            obj_scale = self.def_obj_scale
+                        else:
+                            obj_scale = self.interest_labels[p.label]['obj_scale']
+                        
                         roi = p.geometry
                         # Calculate midpoint in the lower part of the object
                         c1 = [roi.xmin, roi.ymax]
@@ -94,21 +124,24 @@ class MaskDistance(InferenceModel):
                         midp = self.midpoint(c1, c2)
 
                         #Calculate pixel/scale ratio
-                        D = (c2[0]-c1[0]) / (self.obj_scale)
+                        D = (c2[0]-c1[0]) / (obj_scale)
 
                         # Center arround the midpoint
                         coords_t = mask_coords - midp
 
                         # Calculate the norm of each row
                         dist = LA.norm(coords_t, axis=1)
-                        min_dist = np.min(dist) / D # Transform to the real scale 
+                        min_dist_idx = np.argmin(dist)
+
+                        min_dist = dist[min_dist_idx] / D # Transform to the real scale 
+
+                        # For adding Line geometry to prediction
+                        near_coord = mask_coords[min_dist_idx] 
+                        start_point = (int(midp[0]), int(midp[1]))
+                        end_point = (int(near_coord[0]), int(near_coord[1]))
 
                         # Testing
                         if debug:
-                            min_dist_idx = np.argmin(dist)
-                            near_coord = mask_coords[min_dist_idx] # transform back to xage coords
-                            start_point = (int(midp[0]), int(midp[1]))
-                            end_point = (int(near_coord[0]), int(near_coord[1]))
                             if not x is None:
                                 x[mask > 0] = (0,255,0)
                                 
@@ -119,22 +152,18 @@ class MaskDistance(InferenceModel):
                                 cv.line(x, start_point, end_point, (255,0,0), 2)
                         
                         # Add subobject to prediction
-                        idx= 1 if min_dist>self.threshold else 0
+                        idx = 1 if min_dist>pred_threshold else 0
                         try:
                             lbl = str(labels[idx]) if labels else str(idx)
                         except KeyError:
                             self.logger.error('Custom labels not provide name for {}. Using default'.format(idx))
                             lbl = str(idx)
                         new_obj = Object(
-                                    geometry=None,
                                     label=lbl,
-                                    subobject= Object(
-                                        geometry=None,
-                                        label=min_dist,
-                                        subobject=None,
-                                        score=None
-                                    ),
-                                    score=None
+                                    properties={
+                                        'distance': min_dist
+                                    },
+                                    geometry=Line(start_point, end_point)
                                 )
                         if p.subobject:
                             p.subobject.append(new_obj)
@@ -152,14 +181,30 @@ def show_im(x):
 if __name__ == '__main__':
     import json
 
+    logging.basicConfig(level=logging.DEBUG)
+    
     im = cv.imread('test/data/ch1_2020-03-17_07:29:01')
 
     with open('test/data/mask_predictions', 'r') as f:
         preds = json.load(f)
 
-    model = MaskDistance(None, interest_labels=['persona'],  mask_label='borde',
-                   labels={0:'lejos de borde', 1:'cerca de borde'})
+    interest_labels = {
+        'persona':{
+            'obj_scale': 1.12,
+            'pred_threshold': 1
+        }
+    }
+
+    model = MaskDistance(None, interest_labels=interest_labels,  mask_label='borde',
+                   labels={0:'cerca de borde', 1:'lejos de borde'})
     # print(model)
-    res = model.predict(im, preds, debug=True)
+    res = model.predict(im, preds, debug=True,keep_mask=False)
     print(res)
-    show_im(im)
+    for_save = [r._asdict() for r in res]
+    # print(for_save)
+    # Save res 
+    # with open('subobject-properties.json', 'w') as f:
+    #     json.dump(for_save, f)
+
+
+    # show_im(im)
