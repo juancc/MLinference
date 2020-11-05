@@ -15,6 +15,7 @@ import numpy as np
 import cv2 as cv
 
 from MLgeometry import Object
+from MLgeometry.geometries import Polygon
 from MLcommon import InferenceModel
 
 
@@ -38,37 +39,65 @@ class ArUco(InferenceModel):
         self.logger.info('Loaded model with: {} Ids'.format('Custom' if labels else 'Default' ))
 
 
-    def predict(self, im, custom_labels=None, *args, **kwargs):
+    def predict(self, im, custom_labels=None, as_detector=False, *args, **kwargs):
+        """Find all the markers in the image if run as detector each marker will be taken as an individual object.
+        Otherwise only one marker will be defined as in the image
+        """
         labels = custom_labels if custom_labels else self.labels
         if custom_labels: self.logger.info('Using custom labels for prediction')
 
         marker_corners, marker_ids, rejected_candidates = cv.aruco.detectMarkers(im, self.dictionary, parameters=self.parameters)
 
-        res = None
+        res = []
         if marker_ids is not None:
-            # Find the most common marker in ROI (Mode)
-            (_, idx, counts) = np.unique(marker_ids, return_index=True, return_counts=True)
-            index = idx[np.argmax(counts)]
-            m_id = marker_ids[index][0]
-            try:
-                _id = labels[m_id] if labels else m_id
-            except KeyError:
-                self.logger.error('Custom labels not provide name for {}. Using default'.format(m_id))
-                _id = m_id
-            label = 'ID:{}'.format(_id)
-            res = [Object(
-                    geometry=None,
-                    label= label,
-                    subobject=None,
-                    score=None)]
+            if as_detector:
+                self.logger.info(f'Running as detector. Found {len(marker_ids)} markers')
+                for i in range(len(marker_ids)):
+                    m_id = marker_ids[i][0]
+                    try:
+                        _id = labels[m_id] if labels else m_id
+                    except KeyError:
+                        self.logger.info('Custom labels not provide name for {}. Using default'.format(m_id))
+                        _id = m_id
+                    label = 'ID:{}'.format(_id)
+                    res.append(
+                        Object(
+                            geometry=Polygon(marker_corners[i][0]),
+                            label = label
+                        )
+                    )
+            else:
+                # Find the most common marker in ROI (Mode)
+                (_, idx, counts) = np.unique(marker_ids, return_index=True, return_counts=True)
+                index = idx[np.argmax(counts)]
+                m_id = marker_ids[index][0]
+                try:
+                    _id = labels[m_id] if labels else m_id
+                except KeyError:
+                    self.logger.info('Custom labels not provide name for {}. Using default'.format(m_id))
+                    _id = m_id
+                label = 'ID:{}'.format(_id)
+                res = [Object(
+                        geometry=None,
+                        label= label,
+                        subobject=None,
+                        score=None)]
         return res
 
 
-
 if __name__ == '__main__':
-    im = cv.imread('test/data/marker_1.png')
+    import json
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    im = cv.imread('test/data/multiple_markers.jpg')
 
     ar_dict = 10
     model = ArUco(None, ar_dict=ar_dict, labels={1:'juan'})
-    res = model.predict(im, custom_labels={33:'carlos'})
-    print(res)
+    res = model.predict(im, custom_labels={33:'carlos'}, as_detector=True)
+    
+
+    for_save = [r._asdict() for r in res]
+    
+    with open('markers-prediction.json', 'w') as f:
+        json.dump(for_save, f)
