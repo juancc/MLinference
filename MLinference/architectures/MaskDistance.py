@@ -19,11 +19,13 @@ class MaskDistance(InferenceModel):
     thrs_mask=0.45, labels=None, debug=False, def_obj_scale=1.1, def_pred_threshold=1, *args, **kwargs):
         """
         :param interest_labels: (dict) labels to be analyzed for classification 
-            with its corresponding obj_scale: (float) relative scale interest_labels and its pred_threshold
+            with its corresponding obj_scale: (float) relative scale interest_labels, its pred_threshold
+            and scale_reference (optional) if not present same object will be take as scale reference
             {
                 'label':{
                     'obj_scale': 1.1,
-                    'pred_threshold': 1
+                    'pred_threshold': 1,
+                    'scale_reference: 'label-reference-object'
                 }
             }
             ** If not specified. defaults will be used. 
@@ -56,8 +58,21 @@ class MaskDistance(InferenceModel):
     def midpoint(self, ptA, ptB):
 	    return (int((ptA[0] + ptB[0]) * 0.5), int((ptB[1])))
 
+    def get_reference_distance(self, predictions, reference):
+        """Get the mean lower border of a rederence object"""
+        dist = []
+        for p in predictions:
+            if p.label.lower() == reference.lower():
+                roi = p.geometry
+                dist.append(roi.xmax-roi.xmin)
+        if dist:
+            return np.average(dist)
+        else:
+            return None
 
-    def predict(self, x, predictions=None, custom_labels=None, debug=False, keep_mask=True ,*args, **kwargs):
+
+
+    def predict(self, x, predictions=None, custom_labels=None, debug=False, keep_mask=True,*args, **kwargs):
         """
         :param keep_mask: (bool) this parameter will be passed to the geometry of the mask object. 
             False: mask as matrix will not be stored only indexs
@@ -104,8 +119,11 @@ class MaskDistance(InferenceModel):
                 # Get coords of pixels>0
                 mask_coords = np.argwhere(ths.transpose()>0)
                 for p in predictions:
+                    # Distance of the lower points of a reference ROI to calculate the object scale
+                    # If not provided the same object ROI will be used
+                    reference_dist = None
                     if p.label in self.interest_labels:
-                        # Get threshold and scale for each class
+                        # Get threshold, scale for each class and reference object
                         if 'pred_threshold' not in self.interest_labels[p.label]:
                             self.logger.info(f'Using default value: {self.def_pred_threshold} of "pred_threshold" for {p.label}')
                             pred_threshold = self.def_pred_threshold
@@ -116,6 +134,14 @@ class MaskDistance(InferenceModel):
                             obj_scale = self.def_obj_scale
                         else:
                             obj_scale = self.interest_labels[p.label]['obj_scale']
+                        if 'scale_reference' not in self.interest_labels[p.label]:
+                            # Object label to be taken as scale reference 
+                            self.logger.info(f'Using same object as scale reference')
+                        else:
+                            scale_reference = self.interest_labels[p.label]['scale_reference']
+                            reference_dist = self.get_reference_distance(predictions, scale_reference)
+                            if not reference_dist:
+                                continue
                         
                         roi = p.geometry
                         # Calculate midpoint in the lower part of the object
@@ -124,7 +150,8 @@ class MaskDistance(InferenceModel):
                         midp = self.midpoint(c1, c2)
 
                         #Calculate pixel/scale ratio
-                        D = (c2[0]-c1[0]) / (obj_scale)
+                        reference_dist =  reference_dist if reference_dist else (c2[0]-c1[0])
+                        D = reference_dist / (obj_scale)
 
                         # Center arround the midpoint
                         coords_t = mask_coords - midp
@@ -158,6 +185,22 @@ class MaskDistance(InferenceModel):
                         except KeyError:
                             self.logger.error('Custom labels not provide name for {}. Using default'.format(idx))
                             lbl = str(idx)
+                        
+                        # Testing
+                        if debug:
+                            if not x is None:
+                                x[mask > 0] = (0,255,0)
+                                
+                                pt1 = (int(roi.xmin), int(roi.ymin))
+                                pt2 = (int(roi.xmax), int(roi.ymax))
+                                cv.rectangle(x, pt1, pt2, (0,0,255), 2) 
+
+                                cv.line(x, start_point, end_point, (255,0,0), 2)
+
+                                cv.putText(x, lbl, pt2, cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1, cv.LINE_AA) 
+
+
+                        
                         new_obj = Object(
                                     label=lbl,
                                     properties={
@@ -183,28 +226,32 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     
-    im = cv.imread('test/data/ch1_2020-03-17_07:29:01')
+    im = cv.imread('test/data/channel3_2020-08-11_14_03_15')
 
-    with open('test/data/mask_predictions', 'r') as f:
+    with open('test/data/preds-channel3_2020-08-11_14_03_15', 'r') as f:
         preds = json.load(f)
 
     interest_labels = {
         'persona':{
             'obj_scale': 1.12,
             'pred_threshold': 1
-        }
+        },'balde':{
+            'obj_scale': 1.12,
+            'pred_threshold': 1,
+            'scale_reference': 'persona'
+        },
     }
 
     model = MaskDistance(None, interest_labels=interest_labels,  mask_label='borde',
                    labels={0:'cerca de borde', 1:'lejos de borde'})
     # print(model)
-    res = model.predict(im, preds, debug=True,keep_mask=False)
-    print(res)
-    for_save = [r._asdict() for r in res]
+    res = model.predict(im, preds, debug=True, keep_mask=False)
+    # print(res)
+    # for_save = [r._asdict() for r in res]
     # print(for_save)
     # Save res 
     # with open('subobject-properties.json', 'w') as f:
     #     json.dump(for_save, f)
 
 
-    # show_im(im)
+    show_im(im)
