@@ -2,6 +2,7 @@ try:
     # Tensorflow architectures
     from MLinference.architectures.Yolo4 import Yolo4
     from MLinference.architectures.UNet import UNet
+    from MLinference.architectures.KerasClassifiersLite import KerasClassifiersLite
 except Exception as e:
     print('Error: "{}" trying to import Yolo4 and UNet'.format(e))
 try:

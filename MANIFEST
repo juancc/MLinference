@@ -2,6 +2,7 @@
 setup.py
 MLinference/__init__.py
 MLinference/architectures/ArUco.py
+MLinference/architectures/KerasClassifiersLite.py
 MLinference/architectures/MaskDistance.py
 MLinference/architectures/MaskProbability.py
 MLinference/architectures/UNet.py
