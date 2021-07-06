@@ -93,37 +93,44 @@ class KerasClassifiers(AbcModel):
         self.interface = getattr(interface, conf.get('feature_extractor', self._defaults['feature_extractor'])['model'])
         super().__init__(**conf)
 
-    def predict(self, x, pred_threshold=None, custom_labels=None, *args, **kwrags):
+    def predict(self, img, pred_threshold=None, custom_labels=None, *args, **kwrags):
         labels = None
         if custom_labels: 
             LOGGER.info('Using custom labels for prediction')
             labels = dict(self.labels).update(custom_labels)
         threshold = pred_threshold if pred_threshold else self.pred_threshold
 
-        if not isinstance(x, np.ndarray):  # Loaded with keras -> image.load_image
-            x = img_to_array(x)
-        else:  # Loaded with OpenCV
-            x = cv.resize(x, (self.input_shape[1], self.input_shape[0]))  # resize is width, height
-            x = x[..., ::-1].astype(np.float32)  # BGR -> RGB
+        # Preprocess and pack images data
+        img = img if isinstance(img, list) else [img]
+        imdata = []
+        for i in img:
+            if not isinstance(i, np.ndarray):  # Loaded with keras -> image.load_image
+                x = img_to_array(i)
+            else:  # Loaded with OpenCV
+                x = cv.resize(i, (self.input_shape[1], self.input_shape[0]))  # resize is width, height
+                x = x[..., ::-1].astype(np.float32)  # BGR -> RGB
 
-        x = np.expand_dims(x, axis=0)  # expands dimensions as it expects to have [1, None]
-        x = self.interface.preprocess_input(x)
-        preds = self.model.predict(x)
+            # x = np.expand_dims(x, axis=0)  # expands dimensions as it expects to have [1, None]
+            x = self.interface.preprocess_input(x)
+            imdata.append(x)
+        imdata = np.asarray(imdata).astype(np.float32)
 
-        if self.labels == 'imagenet':
-            decoded_preds = self.interface.decode_predictions(preds, top=3)[0]
-            object_name = decoded_preds[0][1]
-            score = decoded_preds[0][2]
-        else:
-            decoded_preds = self.decode_predictions(preds, top=3, custom_labels=labels)[0]
-            object_name = decoded_preds[0]
-            score = decoded_preds[1]
+        preds = self.model.predict(imdata)
         resp = []
-        if score > threshold:
-            resp.append(Object(
-                label=object_name,
-                score=score
-            ))
+        for j in range(len(img)):
+            if self.labels == 'imagenet':
+                decoded_preds = self.interface.decode_predictions(preds, top=3)[j]
+                object_name = decoded_preds[0][1]
+                score = decoded_preds[0][2]
+            else:
+                decoded_preds = self.decode_predictions(preds, top=3, custom_labels=labels)[j]
+                object_name = decoded_preds[0]
+                score = decoded_preds[1]
+            if score > threshold:
+                resp.append(Object(
+                    label=object_name,
+                    score=score
+                ))
         return resp
 
     def train(self, dataset, *args, **kargs):
@@ -184,14 +191,26 @@ class KerasClassifiers(AbcModel):
     def decode_predictions(self, preds, top=5, custom_labels=None):
         labels = custom_labels if custom_labels else self.labels
         results = []
+        
         for pred in preds:
-            top_indices = pred.argsort()[-top:][::-1]
-            for i in top_indices:
-                each_result = []
-                each_result.append(labels[i])
-                each_result.append(pred[i])
-                results.append(each_result)
+            idx = pred.argmax()
+            results.append([labels[idx], pred[idx]])# label, score
+            # top_indices = pred.argsort()[-top:][::-1]
+            # for i in top_indices:
+            #     each_result = []
+            #     each_result.append(labels[i])
+            #     each_result.append(pred[i])
+            #     results.append(each_result)
 
         return results
 
 
+if __name__ == '__main__':
+    model = KerasClassifiers.load('/home/juanc/Downloads/resnet_casco_23oct2.ml')
+    img_path = '/misdoc/datasets/baluarte/02:42:ac:11:00:02/2020-09-03_22:01:48'
+    im = []
+    for i in range(3):
+        im.append(cv.imread(img_path))
+    res = model.predict(im)
+    print(res)
+    print(len(res))

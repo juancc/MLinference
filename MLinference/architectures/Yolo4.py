@@ -4,17 +4,23 @@ Model used for inference.
 Extend MLcommon inference abstract class and return MLgeometry objects
 
 * Model parameters:
+- filepath (str) file path to:
+    - .tflite
+    - Path with .pb
 - Labels: {idx:'label'}
 - input_size: trained image size
 - score_threshold: minimum prediction score
 - overlapThresh: Minimum IOU of the same class to be considered the same object
 - backend: (str) use auxiliary functions from tensorflow to predict
 
+predict function recieves im or list of images
+
 """
 import numpy as np
 import cv2 as cv
 import sys
 import logging
+import os
 
 try:
     import tensorflow as tf
@@ -35,31 +41,40 @@ class Yolo4(InferenceModel):
         self.input_size = input_size
 
         self.backend = backend
-        if 'tensorflow' in sys.modules.keys() and backend=='tf':
-            try:
-                self.interpreter = tf.lite.Interpreter(model_path=filepath)
-            except AttributeError as e:
-                self.logger.error('Cant not use tf backend. Try to update Tensorflow>2.2. Error: {}'.format(e))
-                import tflite_runtime.interpreter as tflite
-                self.interpreter = tflite.Interpreter(model_path=filepath)
-                self.backend = 'tflite'
+        is_path = os.path.isdir(filepath) 
+        self.model = None # Only used when is loaded from .pb 
+        if is_path:
+            # If filepath is directory load entire saved model
+            self.model = tf.keras.models.load_model(filepath)
+            self.logger.info(f'Loaded .pb model from {filepath}')
+            self.predict = self.tf_predict
+            
         else:
-            try:
-                import tflite_runtime.interpreter as tflite
-                self.interpreter = tflite.Interpreter(model_path=filepath)
-                self.backend = 'tflite'
-            except Exception as e:
-                self.logger.error('Cant not use tflite backend. Error: {}'.format(e))
-                self.interpreter = tf.lite.Interpreter(model_path=filepath)
-                self.backend = 'tf'
-        self.logger.info('Using {} backend'.format(self.backend))
-        if self.backend == 'tf': self.predict = self.tf_predict
+            if 'tensorflow' in sys.modules.keys() and backend=='tf':
+                try:
+                    self.interpreter = tf.lite.Interpreter(model_path=filepath)
+                except AttributeError as e:
+                    self.logger.error('Cant not use tf backend. Try to update Tensorflow>2.2. Error: {}'.format(e))
+                    import tflite_runtime.interpreter as tflite
+                    self.interpreter = tflite.Interpreter(model_path=filepath)
+                    self.backend = 'tflite'
+            else:
+                try:
+                    import tflite_runtime.interpreter as tflite
+                    self.interpreter = tflite.Interpreter(model_path=filepath)
+                    self.backend = 'tflite'
+                except Exception as e:
+                    self.logger.error('Cant not use tflite backend. Error: {}'.format(e))
+                    self.interpreter = tf.lite.Interpreter(model_path=filepath)
+                    self.backend = 'tf'
+            self.logger.info(f'Using {self.backend} backend')
+            if self.backend == 'tf': self.predict = self.tf_predict
 
-        self.interpreter.allocate_tensors()
+            self.interpreter.allocate_tensors()
 
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
-        self.logger.info('Loaded model from: {}'.format(filepath))
+            self.input_details = self.interpreter.get_input_details()
+            self.output_details = self.interpreter.get_output_details()
+            self.logger.info(f'Loaded .tflite model from: {filepath}')
 
 
     def filter_boxes(self, box_xywh, scores, score_threshold=0.4, input_shape = [416,416]):
@@ -100,10 +115,11 @@ class Yolo4(InferenceModel):
         else:
             labels = None
 
-        original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
+        # TODO: Make compatible with multiple images!
+        original_image = cv.cvtColor(i, cv.COLOR_BGR2RGB)
         image_data = cv.resize(original_image, (self.input_size, self.input_size))
         image_data = image_data / 255.
-        images_data =[image_data]
+        images_data = [image_data]
         images_data = np.asarray(images_data).astype(np.float32)
 
         self.interpreter.set_tensor(self.input_details[0]['index'], images_data)
@@ -115,6 +131,7 @@ class Yolo4(InferenceModel):
         image_h, image_w, _ = im.shape
         pred_fixed = self.non_max_suppression(boxes[0], pred_conf[0], image_w, image_h, overlapThresh=self.overlapThresh)
 
+        # TODO: Use tf_cast_bbox code
         res = []
         if pred_fixed:
             boxes, classes, scores = pred_fixed
@@ -245,16 +262,23 @@ class Yolo4(InferenceModel):
         else:
             labels = None
 
-        original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
-        image_data = cv.resize(original_image, (self.input_size, self.input_size))
-        image_data = image_data / 255.
-        images_data = [image_data]
+        # Pack images
+        images_data = []
+        im = [im] if not isinstance(im, list) else im
+        for i in im:
+            original_image = cv.cvtColor(i, cv.COLOR_BGR2RGB)
+            image_data = cv.resize(original_image, (self.input_size, self.input_size))
+            image_data = image_data / 255.
+            images_data.append(image_data)
         images_data = np.asarray(images_data).astype(np.float32)
+        
+        if self.model:
+            pred = self.model.predict(images_data)
+        else:
+            self.interpreter.set_tensor(self.input_details[0]['index'], images_data)
+            self.interpreter.invoke()
 
-        self.interpreter.set_tensor(self.input_details[0]['index'], images_data)
-        self.interpreter.invoke()
-
-        pred = [self.interpreter.get_tensor(self.output_details[i]['index']) for i in range(len(self.output_details))]
+            pred = [self.interpreter.get_tensor(self.output_details[i]['index']) for i in range(len(self.output_details))]
 
         boxes, pred_conf = self.tf_filter_boxes(pred[0], pred[1], score_threshold=0.25,
                                              input_shape=tf.constant([self.input_size, self.input_size]))
@@ -274,32 +298,35 @@ class Yolo4(InferenceModel):
     def tf_cast_bbox(self, image, bboxes, labels, show_label=True):
         """Cast to ML geometries"""
         res = []
-        num_classes = len(labels)
-        image_h, image_w, _ = image.shape
-        out_boxes, out_scores, out_classes, num_boxes = bboxes
-        for i in range(num_boxes[0]):
-            if int(out_classes[0][i]) < 0 or int(out_classes[0][i]) > num_classes: continue
-            coor = out_boxes[0][i]
-            coor[0] = int(coor[0] * image_h)
-            coor[2] = int(coor[2] * image_h)
-            coor[1] = int(coor[1] * image_w)
-            coor[3] = int(coor[3] * image_w)
+        for j in range(len(image)):
+            im_res = []
+            # num_classes = len(labels)
+            image_h, image_w, _ = image[j].shape
+            out_boxes, out_scores, out_classes, num_boxes = bboxes
+            for i in range(num_boxes[j]):
+                # if int(out_classes[0][i]) < 0 or int(out_classes[0][i]) > num_classes: continue
+                coor = out_boxes[j][i]
+                coor[0] = int(coor[0] * image_h)
+                coor[2] = int(coor[2] * image_h)
+                coor[1] = int(coor[1] * image_w)
+                coor[3] = int(coor[3] * image_w)
 
-            score = out_scores[0][i]
-            class_ind = int(out_classes[0][i])
+                score = out_scores[j][i]
+                class_ind = int(out_classes[j][i])
 
-            try:
-                lbl = str(labels[class_ind]) if labels else str(class_ind)
-            except KeyError:
-                self.logger.error('Custom labels not provide name for {}. Using default'.format(class_ind[i]))
-                lbl = str(class_ind[i])
+                try:
+                    lbl = str(labels[class_ind]) if labels else str(class_ind)
+                except KeyError:
+                    self.logger.error('Custom labels not provide name for {}. Using default'.format(class_ind[i]))
+                    lbl = str(class_ind[i])
 
-            new_obj = Object(
-                BoundBox(int(coor[1]), int(coor[0]), int(coor[3]), int(coor[2])),
-                lbl,
-                float(score),
-                subobject=None)
-            res.append(new_obj)
+                new_obj = Object(
+                    BoundBox(int(coor[1]), int(coor[0]), int(coor[3]), int(coor[2])),
+                    lbl,
+                    float(score),
+                    subobject=None)
+                im_res.append(new_obj)
+            res.append(im_res)
 
         return res
 
@@ -314,17 +341,29 @@ if __name__ == '__main__':
     # sys.path.append('/misdoc/vaico/mldrawer/')
     # from MLdrawer.drawer import draw
 
-    img_path = '/home/juanc/Pictures/zap_4.png'
-    im = cv.imread(img_path)
-    labels =Yolo4.read_class_names('test/data/coco.nombres')
-    model = Yolo4.load('/misdoc/vaico/architectures/yolov4_tflite/checkpoints/yolov4_sota.tflite',
-                           labels=None, input_size=416)
+    # img_path = '/home/juanc/Pictures/zap_4.png'
+    # im = cv.imread(img_path)
+    # labels =Yolo4.read_class_names('test/data/coco.nombres')
+    # model = Yolo4.load('/misdoc/vaico/architectures/yolov4_tflite/checkpoints/yolov4_sota.tflite',
+    #                        labels=None, input_size=416)
 
-    res = model.predict(im)
-    print(res)
+    # res = model.predict(im)
+    # print(res)
 
     # draw(res, im)
     # cv.imshow('Prediction',im)
     #
     # cv.waitKey(0) # waits until a key is pressed
     # cv.destroyAllWindows() # destroys the window showing image
+
+
+    # Load from .pb
+    img_path = '/misdoc/datasets/baluarte/02:42:ac:11:00:02/2020-09-03_22:01:48'
+    im = cv.imread(img_path)
+    model = Yolo4.load(
+        '/home/juanc/Downloads/yolov4_personas_nov_lite-20210706T145752Z-001/yolov4_personas_nov_lite',
+        labels=None, 
+        input_size=608)
+
+    res = model.predict(im)
+    print(res)
