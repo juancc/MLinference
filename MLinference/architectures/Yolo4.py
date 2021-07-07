@@ -116,7 +116,7 @@ class Yolo4(InferenceModel):
             labels = None
 
         # TODO: Make compatible with multiple images!
-        original_image = cv.cvtColor(i, cv.COLOR_BGR2RGB)
+        original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
         image_data = cv.resize(original_image, (self.input_size, self.input_size))
         image_data = image_data / 255.
         images_data = [image_data]
