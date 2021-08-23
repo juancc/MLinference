@@ -59,18 +59,20 @@ class UNet(InferenceModel):
         if custom_labels:
             labels.update(custom_labels)
             self.logger.info('Using custom labels for prediction')
-
-        original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
-        if self.model_size == "big":
-            image_data = cv.resize(original_image, (512, 512))
-        else:
-            image_data = cv.resize(original_image, (256, 256))
-        image_data = image_data / 255.
+        
+        # Pack images
         images_data = []
-        for i in range(1):
+        im = [im] if not isinstance(im, list) else im
+        for i in range(len(im)):
+            original_image = cv.cvtColor(im, cv.COLOR_BGR2RGB)
+            if self.model_size == "big":
+                image_data = cv.resize(original_image, (512, 512))
+            else:
+                image_data = cv.resize(original_image, (256, 256))
+            image_data = image_data / 255.        
             images_data.append(image_data)
-
         images_data = np.asarray(images_data).astype(np.float32)
+        
         self.interpreter.set_tensor(self.input_details[0]['index'], images_data)
         self.interpreter.invoke()
 

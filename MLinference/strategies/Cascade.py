@@ -89,16 +89,17 @@ class Cascade():
     def predict(self, frame, *args, **kwargs):
         # Run detector
         self.logger.info(f'Cascade with main model {self.main_model}. Number of images: {len(frame)}')
-        frame_preds = self.main_model['model'].predict(frame) # Rturn a list of prediction for image on frame
+        frame_preds = self.main_model['model'].predict(frame) # Return a list of prediction for image on frame
 
-        # Create a list of image crops to be predicted witgh the same model
-        # Track where do belong each image crop by storing the image index and the object index
+        # Create a list of image crops to be predicted with the same model
+        # Track where do belong each image crop (to which object on the main predictions) 
+        # by storing the image index and the object index
         # image index is the id of the list of frame_preds and the object index is the id of the list of areas
         # After add all image crops predict with each model the list of crops
         to_predict = defaultdict(lambda: {'im': [], 'idx': []})# { model: {'im': [list of images], 'idx':  [area_id, roi_id] } }
         area_id = 0
         self.logger.info(f'Adding areas to predict...')
-        for areas in frame_preds:
+        for areas in frame_preds: # for prediction of each image
             # Queue prediction: one prediction run after the other
             self.logger.info(f'Predicting {len(areas)} areas with {len(self.sub_models)} sub-models')
             roi_id = 0
@@ -131,49 +132,6 @@ class Cascade():
                     frame_preds[i[0]][i[1]].subobject.append(newobj)
                 except AttributeError:
                     frame_preds[i[0]][i[1]].subobject = [newobj]
-
-
-
-                    # roi.subobject = []
-                    # for model in self.sub_models[roi.label]: 
-                    #     self.logger.debug('Predicting region with: {}'.format(model['model']))
-                    #     # Only append subobject if
-                    #     res_submodel = model['model'].predict(im_crop)
-                    #     if res_submodel: roi.subobject.append(res_submodel[0])
-            # self.logger.info('Returning prediction of {} objects'.format(len(areas)))
-        
-        # print(frame_preds)
         return frame_preds
 
 
-
-    # def predict(self, frame, *args, **kwargs):
-    #     # Run detector
-    #     self.logger.info(f'Cascade with main model {self.main_model}. Number of images: {len(frame)}')
-    #     frame_preds = self.main_model['model'].predict(frame) # Rturn a list of prediction for image on frame
-    #     for areas in frame_preds:
-    #         # Queue prediction: one prediction run after the other
-    #         self.logger.info(f'Predicting {len(areas)} areas with {len(self.sub_models)} sub-models')
-    #         for roi in areas:
-    #             if roi.label in self.sub_models:
-    #                 roi.subobject = []
-    #                 for model in self.sub_models[roi.label]:
-    #                     area = {
-    #                         'xmin': roi.geometry.xmin,
-    #                         'ymin': roi.geometry.ymin,
-    #                         'xmax': roi.geometry.xmax,
-    #                         'ymax': roi.geometry.ymax,
-    #                     }
-
-    #                     im_crop = crop_rect(
-    #                         frame, 
-    #                         area,
-    #                         model['weights'] if 'weights' in model else[0,0,1,1],
-    #                         model['conditions'] if 'conditions' in model else []
-    #                     )
-    #                     self.logger.debug('Predicting region with: {}'.format(model['model']))
-    #                     # Only append subobject if
-    #                     res_submodel = model['model'].predict(im_crop)
-    #                     if res_submodel: roi.subobject.append(res_submodel[0])
-    #         self.logger.info('Returning prediction of {} objects'.format(len(areas)))
-    #     return areas
