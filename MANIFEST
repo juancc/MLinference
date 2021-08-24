@@ -5,6 +5,7 @@ MLinference/architectures/ArUco.py
 MLinference/architectures/KerasClassifiersLite.py
 MLinference/architectures/MaskDistance.py
 MLinference/architectures/MaskProbability.py
+MLinference/architectures/Ruler.py
 MLinference/architectures/UNet.py
 MLinference/architectures/Yolo4.py
 MLinference/architectures/__init__.py

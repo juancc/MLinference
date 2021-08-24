@@ -24,3 +24,4 @@ except Exception as e:
 # No especial dependencies
 from MLinference.architectures.MaskProbability import MaskProbability
 from MLinference.architectures.MaskDistance import MaskDistance
+from MLinference.architectures.Ruler import Ruler

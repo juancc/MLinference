@@ -1,0 +1,875 @@
+[
+    {
+        "label": "persona",
+        "score": 0.7406049370765686,
+        "boundbox": {
+            "xmin": 1077,
+            "xmax": 1140,
+            "ymin": 526,
+            "ymax": 600
+        },
+        "subobject": [
+            {
+                "label": "Sin casco",
+                "score": 0.9999986886978149
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.708933413028717
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 3.604989683381071
+                },
+                "line": {
+                    "p1": [
+                        1108,
+                        600
+                    ],
+                    "p2": [
+                        912,
+                        548
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.7388859391212463,
+        "boundbox": {
+            "xmin": 1640,
+            "xmax": 1699,
+            "ymin": 986,
+            "ymax": 1041
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9999133348464966
+            },
+            {
+                "label": "Sin arnes",
+                "score": 0.6542689204216003
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 8.455665408852438
+                },
+                "line": {
+                    "p1": [
+                        1669,
+                        1041
+                    ],
+                    "p2": [
+                        1452,
+                        652
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.731844425201416,
+        "boundbox": {
+            "xmin": 478,
+            "xmax": 526,
+            "ymin": 375,
+            "ymax": 435
+        },
+        "subobject": [
+            {
+                "label": "Sin casco",
+                "score": 0.9868361949920654
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.16499158227686112
+                },
+                "line": {
+                    "p1": [
+                        502,
+                        435
+                    ],
+                    "p2": [
+                        507,
+                        430
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.658825159072876,
+        "boundbox": {
+            "xmin": 429,
+            "xmax": 485,
+            "ymin": 366,
+            "ymax": 437
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.998434841632843
+            },
+            {
+                "label": "Sin arnes",
+                "score": 0.7207037806510925
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.46690470119715016
+                },
+                "line": {
+                    "p1": [
+                        457,
+                        437
+                    ],
+                    "p2": [
+                        434,
+                        441
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.6574138402938843,
+        "boundbox": {
+            "xmin": 752,
+            "xmax": 808,
+            "ymin": 785,
+            "ymax": 853
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 1.0
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.770012378692627
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 4.066693988979255
+                },
+                "line": {
+                    "p1": [
+                        780,
+                        853
+                    ],
+                    "p2": [
+                        716,
+                        660
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.6565797924995422,
+        "boundbox": {
+            "xmin": 1055,
+            "xmax": 1111,
+            "ymin": 352,
+            "ymax": 420
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 1.0
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.7412735223770142
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 4.201190307520001
+                },
+                "line": {
+                    "p1": [
+                        1083,
+                        420
+                    ],
+                    "p2": [
+                        912,
+                        542
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.6520302295684814,
+        "boundbox": {
+            "xmin": 522,
+            "xmax": 583,
+            "ymin": 368,
+            "ymax": 431
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9950013756752014
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.07570292296216033
+                },
+                "line": {
+                    "p1": [
+                        552,
+                        431
+                    ],
+                    "p2": [
+                        551,
+                        427
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.6342501044273376,
+        "boundbox": {
+            "xmin": 955,
+            "xmax": 1020,
+            "ymin": 438,
+            "ymax": 510
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9998905658721924
+            },
+            {
+                "label": "Sin arnes",
+                "score": 0.908159077167511
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 1.4050210552445375
+                },
+                "line": {
+                    "p1": [
+                        987,
+                        510
+                    ],
+                    "p2": [
+                        912,
+                        542
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.6093136072158813,
+        "boundbox": {
+            "xmin": 1035,
+            "xmax": 1091,
+            "ymin": 400,
+            "ymax": 459
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9999996423721313
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.6358230710029602
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 3.44615728021807
+                },
+                "line": {
+                    "p1": [
+                        1063,
+                        459
+                    ],
+                    "p2": [
+                        912,
+                        542
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.6077479720115662,
+        "boundbox": {
+            "xmin": 826,
+            "xmax": 896,
+            "ymin": 106,
+            "ymax": 185
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 1.0
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.9989281296730042
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.7606313167363017
+                },
+                "line": {
+                    "p1": [
+                        861,
+                        185
+                    ],
+                    "p2": [
+                        879,
+                        141
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.5880385041236877,
+        "boundbox": {
+            "xmin": 1007,
+            "xmax": 1059,
+            "ymin": 311,
+            "ymax": 382
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 1.0
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.9196110367774963
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 4.157815767041961
+                },
+                "line": {
+                    "p1": [
+                        1033,
+                        382
+                    ],
+                    "p2": [
+                        896,
+                        518
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.5526304841041565,
+        "boundbox": {
+            "xmin": 850,
+            "xmax": 912,
+            "ymin": 444,
+            "ymax": 515
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9777881503105164
+            },
+            {
+                "label": "Sin arnes",
+                "score": 0.7197111248970032
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.07225806451612904
+                },
+                "line": {
+                    "p1": [
+                        881,
+                        515
+                    ],
+                    "p2": [
+                        881,
+                        519
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.5427825450897217,
+        "boundbox": {
+            "xmin": 1698,
+            "xmax": 1742,
+            "ymin": 977,
+            "ymax": 1028
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9999997615814209
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.8217721581459045
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 11.753276314808199
+                },
+                "line": {
+                    "p1": [
+                        1720,
+                        1028
+                    ],
+                    "p2": [
+                        1452,
+                        652
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.52361661195755,
+        "boundbox": {
+            "xmin": 856,
+            "xmax": 907,
+            "ymin": 409,
+            "ymax": 480
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9999982118606567
+            },
+            {
+                "label": "Sin arnes",
+                "score": 0.8236240148544312
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.8371063834843697
+                },
+                "line": {
+                    "p1": [
+                        881,
+                        480
+                    ],
+                    "p2": [
+                        884,
+                        518
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.46840816736221313,
+        "boundbox": {
+            "xmin": 1396,
+            "xmax": 1478,
+            "ymin": 646,
+            "ymax": 731
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9999997615814209
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.9668693542480469
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 1.05179600512975
+                },
+                "line": {
+                    "p1": [
+                        1437,
+                        731
+                    ],
+                    "p2": [
+                        1438,
+                        654
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.4539891481399536,
+        "boundbox": {
+            "xmin": 1079,
+            "xmax": 1148,
+            "ymin": 620,
+            "ymax": 679
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.999285876750946
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.615005373954773
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 3.877518180224977
+                },
+                "line": {
+                    "p1": [
+                        1113,
+                        679
+                    ],
+                    "p2": [
+                        902,
+                        567
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.38614320755004883,
+        "boundbox": {
+            "xmin": 1106,
+            "xmax": 1172,
+            "ymin": 532,
+            "ymax": 607
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9999808073043823
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.6089345216751099
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 3.9801084840160166
+                },
+                "line": {
+                    "p1": [
+                        1139,
+                        607
+                    ],
+                    "p2": [
+                        912,
+                        548
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.3307586908340454,
+        "boundbox": {
+            "xmin": 597,
+            "xmax": 660,
+            "ymin": 710,
+            "ymax": 778
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9991868138313293
+            },
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.9540556703999105
+                },
+                "line": {
+                    "p1": [
+                        628,
+                        778
+                    ],
+                    "p2": [
+                        604,
+                        730
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.31296753883361816,
+        "boundbox": {
+            "xmin": 1123,
+            "xmax": 1195,
+            "ymin": 422,
+            "ymax": 475
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9902958273887634
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.6793879866600037
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 3.790579616254023
+                },
+                "line": {
+                    "p1": [
+                        1159,
+                        475
+                    ],
+                    "p2": [
+                        1227,
+                        241
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "persona",
+        "score": 0.29534196853637695,
+        "boundbox": {
+            "xmin": 1049,
+            "xmax": 1118,
+            "ymin": 622,
+            "ymax": 693
+        },
+        "subobject": [
+            {
+                "label": "Con casco",
+                "score": 0.9996844530105591
+            },
+            {
+                "label": "Con arnes",
+                "score": 0.8872264623641968
+            },
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 3.579746898831444
+                },
+                "line": {
+                    "p1": [
+                        1083,
+                        693
+                    ],
+                    "p2": [
+                        902,
+                        567
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "balde",
+        "score": 0.4582146406173706,
+        "boundbox": {
+            "xmin": 599,
+            "xmax": 659,
+            "ymin": 472,
+            "ymax": 508
+        },
+        "subobject": [
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 1.1969683104634372
+                },
+                "line": {
+                    "p1": [
+                        629,
+                        508
+                    ],
+                    "p2": [
+                        664,
+                        563
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "balde",
+        "score": 0.37377673387527466,
+        "boundbox": {
+            "xmin": 442,
+            "xmax": 512,
+            "ymin": 464,
+            "ymax": 491
+        },
+        "subobject": [
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.0
+                },
+                "line": {
+                    "p1": [
+                        477,
+                        491
+                    ],
+                    "p2": [
+                        477,
+                        491
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "balde",
+        "score": 0.3199903070926666,
+        "boundbox": {
+            "xmin": 1121,
+            "xmax": 1197,
+            "ymin": 764,
+            "ymax": 789
+        },
+        "subobject": [
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 5.461793612468118
+                },
+                "line": {
+                    "p1": [
+                        1159,
+                        789
+                    ],
+                    "p2": [
+                        1422,
+                        650
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "balde",
+        "score": 0.25203338265419006,
+        "boundbox": {
+            "xmin": 1167,
+            "xmax": 1202,
+            "ymin": 764,
+            "ymax": 787
+        },
+        "subobject": [
+            {
+                "label": "lejos de borde",
+                "score": null,
+                "properties": {
+                    "distance": 5.042098162805311
+                },
+                "line": {
+                    "p1": [
+                        1184,
+                        787
+                    ],
+                    "p2": [
+                        1422,
+                        650
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "label": "tabla",
+        "score": 0.3167704641819,
+        "boundbox": {
+            "xmin": 634,
+            "xmax": 724,
+            "ymin": 532,
+            "ymax": 589
+        },
+        "subobject": [
+            {
+                "label": "cerca de borde",
+                "score": null,
+                "properties": {
+                    "distance": 0.01836065573770492
+                },
+                "line": {
+                    "p1": [
+                        679,
+                        589
+                    ],
+                    "p2": [
+                        678,
+                        589
+                    ]
+                }
+            }
+        ]
+    }
+]
