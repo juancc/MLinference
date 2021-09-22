@@ -38,15 +38,63 @@ class ArUco(InferenceModel):
         self.parameters = cv.aruco.DetectorParameters_create()
         self.logger.info('Loaded model with: {} Ids'.format('Custom' if labels else 'Default' ))
 
+    @staticmethod
+    def _split(im, nrows, ncols):
+        """Split a matrix into sub-matrices."""
+        imgheight=im.shape[0]
+        imgwidth=im.shape[1]
 
-    def predict(self, im, custom_labels=None, as_detector=False, *args, **kwargs):
+        y1 = 0
+        M = imgheight//nrows
+        N = imgwidth//ncols
+
+        tiles = []
+        for y in range(0,imgheight,M):
+            row = []
+            for x in range(0, imgwidth, N):
+                y1 = y + M
+                x1 = x + N
+                row.append(im[y:y+M,x:x+N])
+            tiles.append(row)
+        return tiles
+
+    def predict(self, im, custom_labels=None, as_detector=False, split=None, *args, **kwargs):
         """Find all the markers in the image if run as detector each marker will be taken as an individual object.
         Otherwise only one marker will be defined as in the image
+        :param split: (tuple) of (number rows, number columns)
+            Each image part is passed by the model and predictions are assembled
         """
         labels = custom_labels if custom_labels else self.labels
         if custom_labels: self.logger.info('Using custom labels for prediction')
 
-        marker_corners, marker_ids, rejected_candidates = cv.aruco.detectMarkers(im, self.dictionary, parameters=self.parameters)
+        if as_detector and split:
+            self.logger.info(f'Splitting image on {split} parts...')
+            
+            # Split images
+            nrows= split[0]
+            ncols = split[1]
+            imgheight=im.shape[0]
+            imgwidth=im.shape[1]
+
+            y1 = 0
+            M = imgheight//nrows
+            N = imgwidth//ncols
+            marker_corners = []
+            marker_ids = []
+            for y in range(0,imgheight,M):# rows
+                for x in range(0, imgwidth, N):# cols
+                    y1 = y + M
+                    x1 = x + N
+                    tile = im[y:y+M,x:x+N]
+
+                    tile_marker_corners, tile_marker_ids, _ = cv.aruco.detectMarkers(tile, self.dictionary, parameters=self.parameters)
+                    for i in range(len(tile_marker_corners)):
+                        mc = tile_marker_corners[i]
+                        offset = np.array([[x,y]])
+                        marker_corners.append(mc+offset)
+                        marker_ids.append(tile_marker_ids[i])
+        else:
+            marker_corners, marker_ids, rejected_candidates = cv.aruco.detectMarkers(im, self.dictionary, parameters=self.parameters)
 
         res = []
         if marker_ids is not None:
@@ -90,14 +138,24 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
 
-    im = cv.imread('test/data/multiple_markers.jpg')
+    # im = cv.imread('test/data/multiple_markers.jpg')
+    im = cv.imread('test/data/marker_10x10px.jpg')
 
     ar_dict = 10
     model = ArUco(None, ar_dict=ar_dict, labels={1:'juan'})
-    res = model.predict(im, custom_labels={33:'carlos'}, as_detector=True)
-    
+    res = model.predict(im, custom_labels={33:'carlos'}, as_detector=True, split=(2,2))
+    print(res)
 
-    for_save = [r._asdict() for r in res]
+    from MLdrawer.drawer import draw
+    draw(res, im)
+
+    cv.imshow("window_name", im)
+    cv.waitKey(0) 
+    cv.destroyAllWindows() 
+
+
+
+    # for_save = [r._asdict() for r in res]
     
-    with open('markers-prediction.json', 'w') as f:
-        json.dump(for_save, f)
+    # with open('markers-prediction.json', 'w') as f:
+    #     json.dump(for_save, f)
