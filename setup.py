@@ -10,7 +10,7 @@ setup(
   url = 'https://jarbest@bitbucket.org/jarbest/mlinference.git',
   download_url = 'https://bitbucket.org/jarbest/mlinference/get/master.tar.gz',
   keywords = ['vaico', 'common', 'ml', 'computer vision', 'machine learning'],
-  install_requires=['numpy', 'opencv-python', 'MLgeometry', 'MLcommon', 'opencv-contrib-python', 'tensorflow==2.2', 'Keras==2.3.1'],
+  install_requires=['numpy', 'opencv-python', 'MLgeometry', 'MLcommon', 'opencv-contrib-python'],
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
