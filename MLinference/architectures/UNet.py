@@ -19,9 +19,6 @@ except Exception:
 
 from MLgeometry import Object
 from MLgeometry import Mask
-
-import sys
-sys.path.append('/misdoc/vaico/mlcommon/MLcommon')
 from MLcommon import InferenceModel
 
 
